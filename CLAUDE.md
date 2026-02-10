@@ -1,7 +1,7 @@
 # Project Rules (Auto-loaded Every Session)
 
 ## Stack
-Next.js 15 (App Router), TypeScript, React 19, Tailwind CSS, shadcn/ui, Headless UI, Supabase, Stripe, Google OAuth, Zod
+Next.js 15 (App Router), TypeScript, React 17 (Stripe App UI) + React 19 (web app), Tailwind CSS, shadcn/ui, Headless UI, Supabase, Stripe Apps, Google OAuth, Zod
 Testing: Vitest + Playwright | Package manager: npm | Workflow: SDD (OpenSpec + Clavix)
 
 ## Security (Non-negotiable)
@@ -15,7 +15,7 @@ Testing: Vitest + Playwright | Package manager: npm | Workflow: SDD (OpenSpec + 
 - Supabase RLS is non-negotiable — never bypass it
 - Before ANY commit, verify no secrets in staged changes
 - If security conflicts with spec: create `spec-change-requests.yaml` entry and stop
-- For detailed implementation guidance (auth patterns, STRIDE, OWASP, RLS, Stripe security), see the `security-patterns` skill
+- For detailed implementation guidance (auth patterns, STRIDE, OWASP, RLS, Stripe Apps security), see the `security-patterns` skill
 
 ## Autonomy & Execution
 
@@ -65,6 +65,7 @@ Testing: Vitest + Playwright | Package manager: npm | Workflow: SDD (OpenSpec + 
 - If `openspec/ui-design-system.md` exists, UI work MUST comply with it
 - If UI work needed and system file missing, run `/interface-design:init` first
 - For simple one-off pages/components, prefer the `frontend-design` skill
+- Stripe App UI extensions use Stripe UI Toolkit only (not Tailwind, shadcn, or Headless UI)
 
 ## Architecture Boundaries
 
@@ -75,12 +76,56 @@ Testing: Vitest + Playwright | Package manager: npm | Workflow: SDD (OpenSpec + 
 - UI must not call Supabase REST API directly via raw `fetch()` — use official Supabase client helpers (`createClientComponentClient`, `createServerComponentClient`, `createRouteHandlerClient`) or server-side boundaries
 - For detailed auth patterns and security guidance, see the `security-patterns` skill
 
-### Stripe
-- Server/client config: `/lib/stripe.js`
-- Checkout: `/app/api/checkout/route.js`
-- Frontend: `@stripe/react-stripe-js`
-- Always verify webhook signatures
-- Do not alter billing semantics, price IDs, or webhook handling without spec/tasks
+### Stripe Apps (NOT Stripe Payments)
+
+This project builds a **Stripe App** (Dashboard extension) for the Stripe App Marketplace.
+Stripe Apps are NOT payment integrations — do NOT use Stripe Payments patterns.
+
+**Architecture:**
+- React 17 only for extension UI (NOT React 18/19)
+- Stripe UI Toolkit components only (`ContextView`, `FocusView`, `Box`, `Button`, etc.)
+- SDK: `@stripe/ui-extension-sdk` — NOT `@stripe/stripe-js` or `@stripe/react-stripe-js`
+- Config: `stripe-app.json` manifest — NOT env vars for Stripe keys
+- CLI: `stripe apps start` for local dev — NOT `stripe listen`
+- Auth: OAuth / Platform key / Restricted key via manifest `stripe_api_access_type`
+- Secrets: Stripe Secret Store API — NOT `.env` for third-party credentials
+
+**Import guards (extension UI code):**
+- NEVER import from `@stripe/stripe-js` or `@stripe/react-stripe-js`
+- NEVER use `loadStripe()` or `Elements` provider
+- NEVER use React 18/19 APIs (`useTransition`, `useDeferredValue`, `use()`, etc.)
+- NEVER use custom HTML/CSS — only Stripe UI Toolkit components
+- ALWAYS import from `@stripe/ui-extension-sdk`
+- ALWAYS check `stripe-app.json` permissions before calling external APIs
+- ALWAYS use Secret Store API for persisting third-party credentials
+
+**Keyword routing — if you see these terms, use the correct context:**
+
+| Stripe Apps (this project) | Stripe Payments (NOT this project) |
+|---|---|
+| app manifest, `stripe-app.json` | checkout session, payment intent |
+| ui extension, viewport | PaymentElement, Elements |
+| `ContextView`, `FocusView` | `@stripe/stripe-js` |
+| `stripe apps start` | `stripe listen` |
+| Secret Store | publishable key |
+| `@stripe/ui-extension-sdk` | `@stripe/react-stripe-js` |
+
+**Reference docs:** Read `.stripe-apps-docs/` BEFORE writing any Stripe App code.
+
+<!-- STRIPE-APPS-DOCS:START -->
+### Stripe Apps Reference Files (`.stripe-apps-docs/`)
+
+Load the relevant file before any Stripe App work. Do NOT rely on training data for Stripe Apps patterns.
+
+| File | Contents | ~Tokens |
+|------|----------|---------|
+| `README.md` | Directory purpose, file index, when to read each file | ~380 |
+| `core-concepts.md` | Architecture, manifest reference, viewports, permissions, auth, Secret Store, project structure, dev workflow | ~1,470 |
+| `ui-components.md` | All 34 UI Toolkit components (Views, Layout, Navigation, Content, Forms, Charts), import patterns, view registration, testing | ~1,460 |
+| `sdk-api.md` | `ExtensionContextValue` type, utility functions with signatures, hooks, common patterns, import map | ~1,200 |
+| `cli-reference.md` | Prerequisites, all `stripe apps` commands, flags, dev workflow, common issues | ~860 |
+| `publishing-guide.md` | Naming rules, manifest prep, listing fields, image specs, test credentials, review process, rejection checklist | ~1,290 |
+<!-- STRIPE-APPS-DOCS:END -->
 
 ### Google OAuth
 - Do not relax OAuth scopes, callback URLs, or token handling without spec reference
@@ -261,14 +306,15 @@ These utilities provide structured workflows for common tasks. Invoke them using
 
 Before writing code that touches any external library, query Context7 MCP for current docs. Do NOT rely on training data for API patterns.
 
+<!-- @stripe/stripe-js is NOT used in this project — this is a Stripe App, not a Stripe Payments integration -->
+
 | Library | Context7 ID |
 |---------|-------------|
 | Next.js 15 (App Router) | `/vercel/next.js` |
-| React 19 | `/websites/react_dev` |
+| React 19 (web app — Stripe App UI uses React 17; see `.stripe-apps-docs/`) | `/websites/react_dev` |
 | Supabase (JS Client) | `/supabase/supabase-js` |
 | Supabase (Platform/RLS) | `/supabase/supabase` |
-| Stripe (Node SDK) | `/stripe/stripe-node` |
-| Stripe (Stripe.js) | `/stripe/stripe-js` |
+| Stripe (Node SDK — backend only) | `/stripe/stripe-node` |
 | Stripe (Docs) | `/websites/stripe` |
 | Google OAuth | `/googleapis/google-auth-library-nodejs` |
 | Tailwind CSS | `/websites/tailwindcss` |
