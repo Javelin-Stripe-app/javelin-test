@@ -1,6 +1,6 @@
-# OWASP Top 10 Checklist for Next.js + Supabase
+# OWASP Top 10 Checklist for Supabase + Stripe Apps
 
-Detailed security checks tailored to this stack: **Next.js (App Router), Supabase, Stripe, Google OAuth**.
+Detailed security checks tailored to this stack: **Supabase (Edge Functions), Stripe Apps, Stripe OAuth**.
 
 Use this checklist when:
 - Reviewing PRs (code-reviewer, security-auditor)
@@ -17,42 +17,43 @@ Use this checklist when:
 
 - [ ] **RLS enabled** on all tables with user data
 - [ ] **RLS policies tested** with multiple user accounts
-- [ ] **User ID from session only** (`session.user.id`), NEVER from request body/query/headers
-- [ ] **Authorization checks** on EVERY endpoint (API routes, Server Actions, Server Components)
-- [ ] **No client-side auth logic** — auth checks happen on server
+- [ ] **User ID from session only** (`user.id`), NEVER from request body/query/headers
+- [ ] **Authorization checks** on EVERY Edge Function endpoint
+- [ ] **No client-side auth logic** — auth checks happen on server (Edge Functions)
 - [ ] **Admin routes protected** — verify role from session, not request
-- [ ] **File uploads scoped** to authenticated user (no arbitrary paths)
-- [ ] **Direct object references** validated (user can't access `/api/orders/123` if order belongs to someone else)
+- [ ] **Direct object references** validated (user can't access resources belonging to someone else)
 
-### Next.js Specific
+### Edge Function Specific
 
 ```typescript
 // BAD: User ID from request
-export async function GET(request: Request) {
-  const { searchParams } = new URL(request.url)
+Deno.serve(async (req) => {
+  const { searchParams } = new URL(req.url)
   const userId = searchParams.get('userId') // ATTACKER CONTROLS THIS
-}
+})
 
 // GOOD: User ID from session
-export async function GET(request: Request) {
-  const supabase = createRouteHandlerClient({ cookies })
-  const { data: { session } } = await supabase.auth.getSession()
+Deno.serve(async (req) => {
+  const supabase = createClient(
+    Deno.env.get('SUPABASE_URL')!,
+    Deno.env.get('SUPABASE_ANON_KEY')!,
+    { global: { headers: { Authorization: req.headers.get('Authorization')! } } }
+  )
+  const { data: { user } } = await supabase.auth.getUser()
 
-  if (!session) {
+  if (!user) {
     return new Response('Unauthorized', { status: 401 })
   }
 
-  const userId = session.user.id // TRUSTED
-}
+  const userId = user.id // TRUSTED
+})
 ```
 
 ### Supabase RLS Example
 
 ```sql
--- Users can only read their own orders
 CREATE POLICY "Users can view own orders"
-  ON orders
-  FOR SELECT
+  ON orders FOR SELECT
   USING (auth.uid() = user_id);
 ```
 
@@ -64,15 +65,13 @@ CREATE POLICY "Users can view own orders"
 
 ### Checks
 
-- [ ] **HTTPS enforced** (Vercel does this by default; verify no mixed content)
+- [ ] **HTTPS enforced** (Supabase does this by default)
 - [ ] **No secrets in code** (API keys, passwords, tokens)
-- [ ] **Secrets in environment variables** (`.env.local`, Vercel env vars)
+- [ ] **Secrets in environment variables** (`.env.local`, Supabase Dashboard)
 - [ ] **`.env` files in `.gitignore`**
-- [ ] **No secrets in logs** (no `console.log(process.env)`)
-- [ ] **No secrets in client code** (NEXT_PUBLIC_* only for non-sensitive config)
+- [ ] **No secrets in logs** (no `console.log(Deno.env.toObject())`)
 - [ ] **Supabase service role key NEVER exposed** to client
-- [ ] **Passwords never stored in plaintext** (Supabase Auth handles this)
-- [ ] **Sensitive data encrypted at rest** (Supabase encrypts by default; verify for custom storage)
+- [ ] **Sensitive data encrypted at rest** (Supabase encrypts by default)
 
 ### Verification
 
@@ -83,17 +82,12 @@ git diff --staged | grep -i 'password\|api_key\|secret\|token'
 # Should return nothing
 ```
 
-### Client vs Server Secrets
+### Server-Side Secrets (Edge Functions)
 
 ```typescript
-// SAFE: Public config
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
-
-// SAFE: Anon key (client-safe, respects RLS)
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-
-// DANGER: Service role key (server-only, bypasses RLS!)
-const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY // NEVER in client code
+// All env vars in Edge Functions are server-side only
+const supabaseUrl = Deno.env.get('SUPABASE_URL')
+const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') // Bypasses RLS!
 ```
 
 ---
@@ -123,16 +117,6 @@ const query = `SELECT * FROM users WHERE email = '${userEmail}'` // VULNERABLE
 
 - [ ] **User-generated content sanitized** before rendering
 - [ ] **React escapes by default** (don't use `dangerouslySetInnerHTML` without sanitization)
-- [ ] **DOMPurify** for sanitizing HTML/Markdown
-
-```typescript
-import DOMPurify from 'isomorphic-dompurify'
-
-// Sanitize before rendering
-const safeHTML = DOMPurify.sanitize(userInput)
-
-return <div dangerouslySetInnerHTML={{ __html: safeHTML }} />
-```
 
 ### Command Injection
 
@@ -148,20 +132,9 @@ return <div dangerouslySetInnerHTML={{ __html: safeHTML }} />
 ### Checks
 
 - [ ] **Threat model exists** for new features (STRIDE framework)
-- [ ] **Security requirements** defined in `security.md`
+- [ ] **Security requirements** defined in design docs
 - [ ] **Attack scenarios considered** (what could go wrong?)
-- [ ] **Defense in depth** (multiple layers of security, not relying on one control)
-
-### STRIDE Quick Check
-
-For each endpoint:
-
-- **Spoofing:** Can someone impersonate another user? → Session verification
-- **Tampering:** Can data be modified? → RLS, validation
-- **Repudiation:** Can actions be denied? → Audit logs
-- **Information Disclosure:** Can unauthorized users access data? → Auth checks, RLS
-- **Denial of Service:** Can the endpoint be overwhelmed? → Rate limiting
-- **Elevation of Privilege:** Can users gain unauthorized access? → Role checks
+- [ ] **Defense in depth** (multiple layers of security)
 
 ---
 
@@ -172,44 +145,22 @@ For each endpoint:
 ### Checks
 
 - [ ] **No default credentials** (Supabase generates secure defaults)
-- [ ] **Security headers configured** (CSP, X-Frame-Options, etc.)
+- [ ] **Security headers configured** on Edge Function responses
 - [ ] **Error messages don't leak info** (no stack traces in production)
-- [ ] **Debug mode disabled** in production
 - [ ] **CORS configured** (not `*` in production)
 
-### Next.js Security Headers
+### Edge Function Security Headers
 
 ```typescript
-// next.config.js
-const securityHeaders = [
-  {
-    key: 'X-Frame-Options',
-    value: 'DENY',
-  },
-  {
-    key: 'X-Content-Type-Options',
-    value: 'nosniff',
-  },
-  {
-    key: 'Referrer-Policy',
-    value: 'origin-when-cross-origin',
-  },
-  {
-    key: 'Content-Security-Policy',
-    value: "default-src 'self'; script-src 'self' 'unsafe-eval' 'unsafe-inline'; style-src 'self' 'unsafe-inline';",
-  },
-]
+// Set security headers on responses
+const headers = new Headers({
+  'Content-Type': 'application/json',
+  'X-Frame-Options': 'DENY',
+  'X-Content-Type-Options': 'nosniff',
+  'Referrer-Policy': 'origin-when-cross-origin',
+})
 
-module.exports = {
-  async headers() {
-    return [
-      {
-        source: '/:path*',
-        headers: securityHeaders,
-      },
-    ]
-  },
-}
+return new Response(JSON.stringify(data), { headers })
 ```
 
 ### Error Handling
@@ -236,29 +187,15 @@ catch (error) {
 ### Checks
 
 - [ ] **`npm audit` passes** (no high/critical vulnerabilities)
-- [ ] **Dependencies up to date** (especially security-critical ones: auth, crypto, parsing)
+- [ ] **Dependencies up to date** (especially security-critical ones)
 - [ ] **Lockfile committed** (`package-lock.json` ensures reproducible builds)
-- [ ] **Renovate/Dependabot enabled** (automated dependency updates)
-
-### Audit Commands
-
-```bash
-# Check for vulnerabilities
-npm audit
-
-# Fix automatically (if possible)
-npm audit fix
-
-# Manual review required for breaking changes
-npm audit fix --force
-```
 
 ### Critical Dependencies to Monitor
 
-- `next`
-- `react`, `react-dom`
-- `@supabase/auth-helpers-nextjs`
-- `stripe`
+- `react`, `react-dom` (React 17 for Stripe App UI)
+- `@supabase/supabase-js`
+- `@stripe/ui-extension-sdk`
+- `stripe` (Node SDK)
 - `zod` (input validation)
 
 ---
@@ -269,31 +206,17 @@ npm audit fix --force
 
 ### Checks
 
-- [ ] **Supabase Auth used** (don't roll your own)
-- [ ] **Session expiration configured** (reasonable TTL)
-- [ ] **Multi-factor auth supported** (if applicable)
-- [ ] **Password reset flow secure** (Supabase handles this)
-- [ ] **No session data in localStorage** (use httpOnly cookies)
+- [ ] **Stripe OAuth used** for Stripe API access
+- [ ] **Token expiration handled** (1hr access, 1yr refresh rolling)
 - [ ] **Session verified on EVERY request** (don't cache session indefinitely)
 
-### Session Verification Pattern
+### Stripe OAuth Security
 
-```typescript
-// Verify session on every request
-const { data: { session }, error } = await supabase.auth.getSession()
-
-if (!session) {
-  return new Response('Unauthorized', { status: 401 })
-}
-
-// Session is valid, proceed
-```
-
-### Google OAuth Security
-
-- [ ] **OAuth scopes minimal** (only request what you need)
-- [ ] **Callback URL whitelisted** (in Google Cloud Console)
-- [ ] **State parameter used** (CSRF protection, Supabase handles this)
+- [ ] **OAuth permissions requested broadly** with clear purpose fields
+- [ ] **Redirect URIs whitelisted** in `stripe-app.json` manifest (`allowed_redirect_uris`)
+- [ ] **State parameter used** (CSRF protection)
+- [ ] **Access tokens stored in Secret Store** (not .env or application storage)
+- [ ] **Refresh token rotation** handled (1yr rolling expiry)
 
 ---
 
@@ -304,40 +227,33 @@ if (!session) {
 ### Checks
 
 - [ ] **Stripe webhook signatures verified**
-- [ ] **No code from CDNs** without SRI (Subresource Integrity)
 - [ ] **CI/CD secrets secured** (use GitHub Secrets, not hardcoded)
 - [ ] **Dependency integrity** (package-lock.json committed)
 
 ### Stripe Webhook Verification
 
 ```typescript
-import { stripe } from '@/lib/stripe'
-import { headers } from 'next/headers'
+// supabase/functions/stripe-webhook/index.ts
+import Stripe from 'stripe'
 
-export async function POST(request: Request) {
-  const body = await request.text()
-  const signature = headers().get('stripe-signature')!
+Deno.serve(async (req) => {
+  const body = await req.text()
+  const signature = req.headers.get('stripe-signature')!
 
-  let event
+  const stripe = new Stripe(Deno.env.get('STRIPE_SECRET_KEY')!)
 
   try {
-    // CRITICAL: Verify signature
-    event = stripe.webhooks.constructEvent(
+    const event = stripe.webhooks.constructEvent(
       body,
       signature,
-      process.env.STRIPE_WEBHOOK_SECRET!
+      Deno.env.get('STRIPE_WEBHOOK_SECRET')!
     )
+    // Webhook is verified, safe to process
   } catch (err) {
     console.error('Webhook signature verification failed:', err.message)
     return new Response('Webhook Error', { status: 400 })
   }
-
-  // Webhook is verified, safe to process
-  switch (event.type) {
-    case 'checkout.session.completed':
-      // ...
-  }
-}
+})
 ```
 
 ---
@@ -348,46 +264,10 @@ export async function POST(request: Request) {
 
 ### Checks
 
-- [ ] **Audit logs** for sensitive actions (user creation, role changes, data exports)
+- [ ] **Audit logs** for sensitive actions (data mutations, role changes)
 - [ ] **Log security events** (failed auth, unauthorized access attempts)
 - [ ] **No sensitive data in logs** (passwords, tokens, PII)
-- [ ] **Logs include** user ID, timestamp, action, IP (if applicable)
-- [ ] **Logs centralized** (Vercel logs, or external service like Datadog)
-
-### Safe Logging Pattern
-
-```typescript
-// GOOD: Log metadata
-console.log({
-  event: 'user.login.success',
-  userId: session.user.id,
-  timestamp: new Date().toISOString(),
-  ip: request.headers.get('x-forwarded-for'),
-})
-
-// BAD: Log sensitive data
-console.log({
-  event: 'user.login.success',
-  email: 'user@example.com', // PII
-  password: 'abc123', // NEVER LOG PASSWORDS
-})
-```
-
-### What to Log
-
-**Do log:**
-- User ID (from session)
-- Action type (`user.update`, `order.create`)
-- Timestamp
-- Request ID (for tracing)
-- Non-sensitive error codes
-
-**Do NOT log:**
-- Passwords (plaintext or hashed)
-- API keys, tokens, secrets
-- PII (emails, names, addresses)
-- PHI (health data)
-- Full request/response bodies
+- [ ] **Logs include** user ID, timestamp, action, request ID
 
 ---
 
@@ -399,34 +279,8 @@ console.log({
 
 - [ ] **User-provided URLs validated** (whitelist, not blacklist)
 - [ ] **No arbitrary fetch** from user input
-- [ ] **Internal IPs blocked** (127.0.0.1, 169.254.x.x, 10.x.x.x, 192.168.x.x)
+- [ ] **Internal IPs blocked** (127.0.0.1, 169.254.x.x, 10.x.x.x)
 - [ ] **Timeout on external requests** (prevent resource exhaustion)
-
-### SSRF Prevention Pattern
-
-```typescript
-// BAD: Arbitrary URL from user
-export async function POST(request: Request) {
-  const { url } = await request.json()
-  const response = await fetch(url) // ATTACKER CONTROLS THIS
-}
-
-// GOOD: Whitelist allowed domains
-const ALLOWED_DOMAINS = ['api.stripe.com', 'api.github.com']
-
-export async function POST(request: Request) {
-  const { url } = await request.json()
-
-  const parsed = new URL(url)
-
-  if (!ALLOWED_DOMAINS.includes(parsed.hostname)) {
-    return new Response('Invalid URL', { status: 400 })
-  }
-
-  // Safe to fetch
-  const response = await fetch(url)
-}
-```
 
 ---
 
@@ -445,7 +299,7 @@ Before approving any PR, verify:
 - [ ] **A9: Logging Failures** — Actions logged, no sensitive data
 - [ ] **A10: SSRF** — URLs validated/whitelisted
 
-If ANY check fails: **REQUEST_CHANGES**, create remediation ticket in `tasks.yaml`.
+If ANY check fails: **REQUEST_CHANGES**, create remediation ticket.
 
 ---
 
@@ -467,6 +321,5 @@ If ANY check fails: **REQUEST_CHANGES**, create remediation ticket in `tasks.yam
 - Missing security headers
 - Outdated dependencies with known CVEs
 - Missing audit logs
-- Weak error messages (info leakage)
 
 **SEV-1/2 block merge. SEV-3 can be deferred** (create ticket, don't block).

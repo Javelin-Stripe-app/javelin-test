@@ -1,6 +1,6 @@
 ---
 name: ux-states
-description: Ensure complete UI state coverage (loading, empty, error, populated) and state-to-component mapping for interactive features
+description: Ensure complete UI state coverage (loading, empty, error, populated) and state-to-component mapping for Stripe App UI extensions
 ---
 
 # UX States
@@ -14,10 +14,10 @@ Ensure every interactive element and screen has complete state coverage and meet
 Every interactive element and screen MUST define these states:
 
 ### Core States
-- **Loading** — Data is being fetched. Show skeleton, spinner, or placeholder.
+- **Loading** — Data is being fetched. Show Spinner or skeleton placeholder.
 - **Empty** — No data exists. Show empty state message with action.
 - **Populated** — Data exists and is displayed normally.
-- **Error** — Operation failed. Show error message with retry option.
+- **Error** — Operation failed. Show Banner with error message and retry option.
 
 ### Edge States
 - **Disabled** — Element is visible but not interactive.
@@ -59,7 +59,7 @@ For the full accessibility checklist (ARIA roles, keyboard navigation, contrast,
 
 ## Screen State Documentation Format
 
-Use this template from ui-designer to document flows and screens:
+Use this template to document flows and screens:
 
 ```markdown
 ## Flow: {Flow Name}
@@ -83,24 +83,24 @@ Use this template from ui-designer to document flows and screens:
 ### Example
 
 ```markdown
-## Flow: User List
+## Flow: Customer Metadata Editor
 
 ### Entry Point
-Navigation: sidebar → "Users"
+Stripe Dashboard → Customer detail page → Javelin drawer
 
 ### Screens
-#### User List Screen
-- **States**: loading (skeleton rows) | empty ("No users found") | populated (table) | error (retry banner)
-- **Key elements**: Search input (debounced 300ms), sortable column headers, pagination controls
-- **Accessibility**: Table uses `role="grid"`, search has `aria-label="Search users"`, sort announces via `aria-live`
+#### Metadata List
+- **States**: loading (Spinner) | empty ("No metadata found" + "Add Metadata" button) | populated (list of key-value pairs) | error (Banner with retry)
+- **Key elements**: Add button, edit inline fields, delete with confirmation
+- **Accessibility**: List uses appropriate ARIA labels, edit fields have descriptive labels
 
 ### Transitions
-User List → click row → User Detail
-User List → click "Add User" → Create User Form
+Metadata List → click "Add" → Add Metadata Form
+Metadata List → click row → Edit Metadata Inline
 
 ### Error Handling
-- Network error: Show retry banner at top
-- Permission error: Show "Access Denied" message
+- Network error: Show Banner with retry action
+- Permission error: Show "Insufficient permissions" Banner
 - Rate limit: Show throttle message with countdown
 ```
 
@@ -108,7 +108,7 @@ User List → click "Add User" → Create User Form
 
 ## Component State Patterns
 
-Map screen states to component props (from frontend-designer):
+Map screen states to component props:
 
 ### State Prop Pattern
 
@@ -133,26 +133,26 @@ Map screen states to component props (from frontend-designer):
 ### Example
 
 ```markdown
-## Component: UserListPage
+## Component: CustomerMetadataView
 
 ### States
-- **Loading**: PageLayout + DataTable skeleton
-- **Empty**: PageLayout + EmptyState("No users found")
-- **Populated**: PageLayout + DataTable with rows
-- **Error**: PageLayout + ErrorBanner with retry
+- **Loading**: ContextView + Spinner
+- **Empty**: ContextView + Box("No metadata found") + Button("Add Metadata")
+- **Populated**: ContextView + List of metadata key-value pairs
+- **Error**: ContextView + Banner(type="critical") with retry
 
 ### Props
 | Prop | Type | Required | Description |
 |------|------|----------|-------------|
-| — | — | — | Page-level component, no external props |
+| — | — | — | View component, receives ExtensionContextValue |
 
 ### Children
-- SearchInput — debounced search filter
-- DataTable — sortable, paginated user rows
-- Pagination — cursor-based page controls
+- MetadataList — displays key-value pairs
+- AddMetadataForm — FocusView for adding new metadata
+- EditMetadataInline — inline editing of existing values
 
 ### Data Requirements
-- `GET /users?search={q}&sort={field}&cursor={c}` via useUsers hook
+- `GET /functions/v1/customer-metadata?customer_id={id}` via Edge Function
 ```
 
 ---
@@ -200,120 +200,117 @@ UX state coverage must be addressed at every phase of the OpenSpec pipeline:
 
 ---
 
-## Stack-Specific Patterns (React / Next.js App Router)
+## Stack-Specific Patterns (Stripe App UI)
 
-### Loading States with Suspense
+All UI in this project uses **Stripe UI Toolkit** components only. No custom HTML/CSS. No React 18/19 APIs.
 
-Use React Suspense boundaries and Next.js `loading.tsx` for loading states:
-
-```tsx
-// app/users/loading.tsx — Automatic loading UI for the route segment
-export default function Loading() {
-  return <UserListSkeleton />
-}
-
-// app/users/page.tsx — Server Component with async data
-export default async function UsersPage() {
-  const users = await getUsers()
-  // This renders only after data loads; loading.tsx shows during fetch
-  return <UserList users={users} />
-}
-```
-
-For component-level loading within a page:
+### Loading States with Stripe UI Toolkit
 
 ```tsx
-// Wrap async components in Suspense for granular loading states
-import { Suspense } from 'react'
+// src/views/CustomerMetadataView.tsx
+import { ContextView, Box, Spinner } from '@stripe/ui-extension-sdk/ui'
 
-export default function DashboardPage() {
-  return (
-    <div>
-      <h1>Dashboard</h1>
-      <Suspense fallback={<StatsSkeleton />}>
-        <StatsPanel />
-      </Suspense>
-      <Suspense fallback={<ActivitySkeleton />}>
-        <RecentActivity />
-      </Suspense>
-    </div>
-  )
+const CustomerMetadataView = ({ userContext, environment }: ExtensionContextValue) => {
+  const [isLoading, setIsLoading] = useState(true)
+  const [data, setData] = useState(null)
+  const [error, setError] = useState(null)
+
+  useEffect(() => {
+    fetchMetadata(environment.objectContext?.id)
+      .then(setData)
+      .catch(setError)
+      .finally(() => setIsLoading(false))
+  }, [environment.objectContext?.id])
+
+  if (isLoading) {
+    return (
+      <ContextView title="Customer Metadata">
+        <Box css={{ stack: 'y', alignX: 'center', padding: 'large' }}>
+          <Spinner size="large" />
+        </Box>
+      </ContextView>
+    )
+  }
+
+  // ... render populated/empty/error states
 }
 ```
 
-### Error States with error.tsx
-
-Use Next.js error boundaries for route-level error handling:
+### Error States with Banner
 
 ```tsx
-// app/users/error.tsx — Automatic error UI for the route segment
-'use client'
+import { ContextView, Banner, Button } from '@stripe/ui-extension-sdk/ui'
 
-export default function Error({
-  error,
-  reset,
-}: {
-  error: Error & { digest?: string }
-  reset: () => void
-}) {
+// Error state
+if (error) {
   return (
-    <div role="alert">
-      <h2>Something went wrong</h2>
-      <p>{error.message}</p>
-      <button onClick={() => reset()}>Try again</button>
-    </div>
+    <ContextView title="Customer Metadata">
+      <Banner
+        type="critical"
+        title="Failed to load metadata"
+        description={error.message}
+        actions={
+          <Button onPress={() => retry()}>Try again</Button>
+        }
+      />
+    </ContextView>
   )
 }
 ```
 
 ### Empty States
 
-Handle empty states explicitly in Server Components:
-
 ```tsx
-export default async function UsersPage() {
-  const users = await getUsers()
+import { ContextView, Box, Button, Icon } from '@stripe/ui-extension-sdk/ui'
 
-  if (users.length === 0) {
-    return (
-      <EmptyState
-        title="No users found"
-        description="Get started by inviting your first team member."
-        action={{ label: 'Invite User', href: '/users/invite' }}
-      />
-    )
-  }
-
-  return <UserList users={users} />
+// Empty state
+if (!data || data.length === 0) {
+  return (
+    <ContextView title="Customer Metadata">
+      <Box css={{ stack: 'y', alignX: 'center', padding: 'xlarge', gap: 'medium' }}>
+        <Box css={{ font: 'heading' }}>No metadata found</Box>
+        <Box css={{ font: 'body', color: 'secondary' }}>
+          Add metadata to organize customer information.
+        </Box>
+        <Button type="primary" onPress={() => setShowAddForm(true)}>
+          Add Metadata
+        </Button>
+      </Box>
+    </ContextView>
+  )
 }
 ```
 
 ### Client Component State Management
 
-For interactive components requiring client-side state transitions:
+For interactive components requiring client-side state transitions (React 17 patterns only):
 
 ```tsx
-'use client'
+import { useState } from 'react'
+import { Button } from '@stripe/ui-extension-sdk/ui'
 
-import { useTransition } from 'react'
+const DeleteMetadataButton = ({ metadataKey, onDelete }) => {
+  const [isDeleting, setIsDeleting] = useState(false)
 
-export function UserActions({ userId }: { userId: string }) {
-  const [isPending, startTransition] = useTransition()
-
-  const handleDelete = () => {
-    startTransition(async () => {
-      await deleteUser(userId)
-    })
+  const handleDelete = async () => {
+    setIsDeleting(true)
+    try {
+      await onDelete(metadataKey)
+    } catch (err) {
+      // Error handling
+    } finally {
+      setIsDeleting(false)
+    }
   }
 
   return (
-    <button
-      onClick={handleDelete}
-      disabled={isPending}
-      aria-busy={isPending}
+    <Button
+      type="destructive"
+      onPress={handleDelete}
+      disabled={isDeleting}
     >
-      {isPending ? 'Deleting...' : 'Delete User'}
-    </button>
+      {isDeleting ? 'Deleting...' : 'Delete'}
+    </Button>
   )
 }
 ```
@@ -323,23 +320,23 @@ export function UserActions({ userId }: { userId: string }) {
 ## Common Patterns
 
 ### Data Table States
-- **Loading**: Skeleton rows matching expected layout
-- **Empty**: "No items found" with "Add Item" CTA
-- **Populated**: Table with data, sort, filter, pagination
-- **Error**: Error banner above table, retain previous data if available
+- **Loading**: Spinner or skeleton rows
+- **Empty**: "No items found" with action CTA
+- **Populated**: List/table with data, sort, filter, pagination
+- **Error**: Banner above table, retain previous data if available
 
 ### Form States
 - **Default**: Empty or pre-filled inputs
 - **Validating**: Show inline validation on blur
 - **Submitting**: Disable form, show loading on submit button
-- **Success**: Show success message, clear form or redirect
-- **Error**: Show error message, keep form enabled for retry
+- **Success**: Show success Banner, clear form or navigate back
+- **Error**: Show error Banner, keep form enabled for retry
 
-### Modal/Dialog States
-- **Opening**: Animate in, trap focus
-- **Open**: Focus first focusable element
-- **Closing**: Animate out, return focus to trigger element
-- **Closed**: Remove from DOM or hide with display:none
+### FocusView (Modal) States
+- **Opening**: FocusView renders with initial state
+- **Open**: Focus first interactive element
+- **Closing**: Return to previous ContextView
+- **Closed**: FocusView unmounted
 
 ---
 

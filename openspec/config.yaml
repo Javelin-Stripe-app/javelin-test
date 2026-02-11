@@ -1,9 +1,10 @@
 schema: spec-driven
 
 context: |
-  Tech stack: Next.js 15 (App Router), TypeScript, React 19
-  Styling: Tailwind CSS, shadcn/ui (components), Headless UI (accessible primitives)
-  Backend: Supabase (Auth, Database, RLS), Stripe (payments), Google OAuth
+  Tech stack: TypeScript, React 17 (Stripe App UI — Stripe UI Toolkit), Supabase (Postgres + RLS + Edge Functions), Stripe Apps, Stripe OAuth, Zod
+  No standalone web app. No Next.js, React 19, Tailwind, shadcn/ui, or Headless UI.
+  Backend: Supabase Edge Functions (workflow execution, scheduling, data caching, webhooks)
+  Auth: Stripe OAuth 2.0 (access tokens via Secret Store API)
   Validation: Zod (server-side required, client-side optional)
   Testing: Vitest + Playwright | Package manager: npm
   Agent Skills: vercel-react-best-practices, web-design-guidelines, vercel-composition-patterns,

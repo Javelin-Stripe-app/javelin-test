@@ -1,85 +1,111 @@
 ---
 name: performance-patterns
-description: Performance budgets and optimization patterns for Next.js + Supabase — Core Web Vitals targets, bundle analysis, caching strategies, and database query performance.
+description: Performance budgets and optimization patterns for Supabase Edge Functions + Stripe App UI — API response times, caching strategies, Stripe data cache, and database query performance.
 ---
 
 # Performance Patterns
 
-Performance budgets, optimization patterns, and monitoring for Next.js App Router + Supabase applications.
+Performance budgets, optimization patterns, and monitoring for Supabase Edge Functions + Stripe App UI applications.
 
 ## Scope
 
 **Use for:**
-- Setting Core Web Vitals targets for new pages
-- Bundle size analysis and optimization
-- Caching strategies (ISR, SWR, CDN)
+- Setting API response time targets for Edge Functions
+- Stripe data cache optimization (freshness, retention, sync)
 - Supabase query optimization and connection pooling
-- Image and font optimization
+- Bundle considerations for Stripe App extensions
 - Adding performance criteria to specs and design docs
 
 **Not for:**
 - Load testing or stress testing execution
 - CDN/infrastructure configuration
-- Third-party service performance (Stripe checkout speed, etc.)
+- Third-party service performance (Stripe API latency, etc.)
+- Stripe App UI rendering (controlled by Stripe Dashboard)
 
 ---
 
-# Core Web Vitals Targets
+# Response Time Targets
 
-| Metric | Good     | Needs Work | Poor    |
-|--------|----------|------------|---------|
-| LCP    | < 2.5s   | 2.5-4.0s   | > 4.0s  |
-| INP    | < 200ms  | 200-500ms  | > 500ms |
-| CLS    | < 0.1    | 0.1-0.25   | > 0.25  |
+| Endpoint Type | Target (p95) | Action if exceeded |
+|---------------|-------------|-------------------|
+| Edge Function (simple read) | < 200ms | Optimize query, add index |
+| Edge Function (complex query) | < 500ms | Cache result, paginate |
+| Edge Function (Stripe API call) | < 2s | Cache, batch, queue |
+| Edge Function (write operation) | < 300ms | Async processing |
+| Stripe data cache refresh | < 5s | Background sync |
 
-**Project targets:** All pages MUST hit "Good" thresholds on mobile 4G.
+**Project target:** All Edge Function endpoints MUST respond in < 500ms (p95) for cached data operations.
 
 ---
 
-# Next.js Bundle Optimization
+# Stripe Data Cache Performance
 
-## Bundle Analysis
+The query-optimized cache (see product-vision-strategy.md §10) has specific performance considerations.
 
-```javascript
-// next.config.js
-const withBundleAnalyzer = require('@next/bundle-analyzer')({
-  enabled: process.env.ANALYZE === 'true',
-})
+## Cache Strategy
 
-/** @type {import('next').NextConfig} */
-const nextConfig = {
-  // ... other config
-}
+| Data Type | Strategy | TTL | Freshness |
+|-----------|----------|-----|-----------|
+| Recent Stripe data (< 60 days) | Auto-synced rolling cache | Continuous | Near-real-time |
+| Historical Stripe data (60d–24mo) | On-demand backfill | Until 60d inactive | Stale-acceptable |
+| Single object lookup | Always fetch live from Stripe API | None | Real-time |
+| Aggregate/analytical queries | Cache with freshness indicator | 1 hour | Timestamp-marked |
+| Auth state / tokens | Never cache in application | None | Always fresh |
 
-module.exports = withBundleAnalyzer(nextConfig)
-```
+## AI-Driven Freshness Routing
 
-Run: `ANALYZE=true npm run build`
-
-## Bundle Budgets
-
-| Bundle          | Budget  | Action if exceeded      |
-|-----------------|---------|-------------------------|
-| First Load JS   | < 100kB | Split or lazy-load      |
-| Per-route JS    | < 50kB  | Code-split components   |
-| Total page size | < 300kB | Audit dependencies      |
-
-## Dynamic Imports
-
-Lazy-load heavy components that are below the fold or conditionally rendered:
+The AI layer decides per-query whether to use cached data or fetch fresh:
 
 ```typescript
-import dynamic from 'next/dynamic'
+// supabase/functions/_shared/freshness.ts
+type FreshnessDecision = 'cache' | 'refresh' | 'live' | 'ask_user'
 
-const HeavyChart = dynamic(() => import('@/components/Chart'), {
-  loading: () => <ChartSkeleton />,
-  ssr: false, // only if truly client-only
+function decideFreshness(query: ParsedQuery): FreshnessDecision {
+  // Single-object lookups: always live
+  if (query.isSingleObject) return 'live'
+
+  // Recency-sensitive queries (today, this week, latest): refresh first
+  if (query.isRecencySensitive) return 'refresh'
+
+  // Historical/aggregate queries: use cache
+  if (query.isHistorical || query.isAggregate) return 'cache'
+
+  // Ambiguous: ask user
+  return 'ask_user'
+}
+```
+
+## Cache Sync Performance
+
+```typescript
+// Background sync should not block user requests
+// Use Supabase Edge Function scheduled invocations (pg_cron)
+
+// supabase/functions/sync-stripe-data/index.ts
+Deno.serve(async (req) => {
+  const supabaseAdmin = createClient(
+    Deno.env.get('SUPABASE_URL')!,
+    Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,
+  )
+
+  // Sync only recent data (last 60 days rolling window)
+  // Process in batches to stay within Stripe rate limits (25 req/sec)
+  const batchSize = 100
+  // ... batch processing logic
 })
 ```
 
-## Tree Shaking
+---
 
-Import only what you need:
+# Stripe App Bundle Considerations
+
+Stripe App UI extensions are bundled and uploaded to Stripe. While Stripe handles rendering, keep extensions lean:
+
+## Bundle Best Practices
+
+- Import only what you need from `@stripe/ui-extension-sdk`
+- Avoid large utility libraries (use specific imports)
+- Keep view components focused — split complex views into separate registered views
 
 ```typescript
 // GOOD: Named import (tree-shakeable)
@@ -91,92 +117,6 @@ import _ from 'lodash'
 // GOOD: Cherry-pick lodash
 import debounce from 'lodash/debounce'
 ```
-
----
-
-# Image Optimization
-
-Always use `next/image` for images:
-
-```tsx
-import Image from 'next/image'
-
-<Image
-  src="/hero.webp"
-  alt="Hero image"
-  width={1200}
-  height={630}
-  priority          // only for above-the-fold LCP images
-  sizes="(max-width: 768px) 100vw, 50vw"
-  placeholder="blur" // use for large images
-  blurDataURL="..."  // base64 placeholder
-/>
-```
-
-**Rules:**
-- Set `priority` only on the LCP image (usually hero/banner)
-- Always provide `sizes` for responsive images
-- Use WebP/AVIF formats (Next.js handles conversion)
-- Set explicit `width` and `height` to prevent CLS
-
----
-
-# Caching Strategies
-
-## Static Generation with ISR
-
-```typescript
-// app/blog/[slug]/page.tsx
-export const revalidate = 3600 // revalidate every hour
-
-export async function generateStaticParams() {
-  const posts = await getAllPostSlugs()
-  return posts.map(slug => ({ slug }))
-}
-```
-
-## Client-Side Caching with SWR
-
-```typescript
-'use client'
-import useSWR from 'swr'
-
-const fetcher = (url: string) => fetch(url).then(r => r.json())
-
-export function useItems() {
-  const { data, error, isLoading, mutate } = useSWR('/api/items', fetcher, {
-    revalidateOnFocus: false,
-    dedupingInterval: 10000, // 10s dedup
-  })
-
-  return { items: data?.data ?? [], error, isLoading, mutate }
-}
-```
-
-## Route Handler Caching
-
-```typescript
-// app/api/public-data/route.ts
-export async function GET() {
-  const data = await fetchData()
-
-  return Response.json({ data }, {
-    headers: {
-      'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=300',
-    },
-  })
-}
-```
-
-## Cache Strategy Matrix
-
-| Data Type        | Strategy              | TTL     |
-|------------------|-----------------------|---------|
-| Static content   | ISR                   | 1 hour  |
-| User-specific    | No cache / SWR client | -       |
-| Public lists     | CDN + s-maxage        | 60s     |
-| Search results   | SWR client            | 10s     |
-| Auth state       | Never cache           | -       |
 
 ---
 
@@ -200,22 +140,27 @@ Ensure columns used in `.eq()`, `.order()`, and cursor pagination have database 
 CREATE INDEX idx_items_user_id ON items(user_id);
 CREATE INDEX idx_items_created_at ON items(created_at DESC);
 CREATE INDEX idx_items_user_created ON items(user_id, created_at DESC);
+
+-- Cache table indexes (for Stripe data cache)
+CREATE INDEX idx_stripe_cache_object_type ON stripe_cache(object_type);
+CREATE INDEX idx_stripe_cache_synced_at ON stripe_cache(synced_at DESC);
+CREATE INDEX idx_stripe_cache_account_id ON stripe_cache(stripe_account_id);
 ```
 
 ## Connection Pooling
 
-Use Supabase connection pooling for serverless environments:
+Use Supabase connection pooling for Edge Functions:
 
 ```bash
-# .env.local
+# Supabase Dashboard Environment Variables
 # Direct connection (migrations only)
 DATABASE_URL=postgresql://postgres:[password]@db.[ref].supabase.co:5432/postgres
 
-# Pooled connection (application queries)
+# Pooled connection (application queries via Edge Functions)
 DATABASE_URL_POOLED=postgresql://postgres.[ref]:[password]@aws-0-[region].pooler.supabase.com:6543/postgres?pgbouncer=true
 ```
 
-In application code, use the pooled connection string. Direct connections are only for migrations.
+In Edge Functions, use the pooled connection string. Direct connections are only for migrations.
 
 ## Avoid N+1 Queries
 
@@ -234,20 +179,14 @@ const { data } = await supabase
 
 ---
 
-# Font Optimization
+# Edge Function Cold Start Mitigation
 
-```typescript
-// app/layout.tsx
-import { Inter } from 'next/font/google'
+Supabase Edge Functions run on Deno Deploy. Cold starts can affect response times:
 
-const inter = Inter({
-  subsets: ['latin'],
-  display: 'swap',      // prevent FOIT, reduce CLS
-  variable: '--font-inter',
-})
-```
-
-Use `display: 'swap'` to prevent invisible text during font load.
+- Keep function dependencies minimal
+- Use shared modules (`_shared/`) for common utilities
+- Avoid heavy initialization in the global scope
+- Monitor cold start frequency in production logs
 
 ---
 
@@ -257,11 +196,11 @@ When adding performance criteria to specs:
 
 ```markdown
 ## Performance Criteria
-- **PC-1**: Page LCP < 2.5s on mobile 4G
-- **PC-2**: First Load JS < 100kB
-- **PC-3**: CLS < 0.1 (no layout shifts after load)
-- **PC-4**: API response time < 200ms (p95) for list endpoints
-- **PC-5**: Database query time < 50ms (p95) for indexed queries
+- **PC-1**: Edge Function response < 200ms (p95) for cached data reads
+- **PC-2**: Edge Function response < 500ms (p95) for Stripe API-backed reads
+- **PC-3**: Cache sync completes within Stripe rate limits (25 req/sec)
+- **PC-4**: Database query time < 50ms (p95) for indexed queries
+- **PC-5**: Stripe data cache freshness within 1 hour for auto-synced data
 ```
 
 ---
@@ -270,22 +209,22 @@ When adding performance criteria to specs:
 
 ## Specs Phase
 - Add performance acceptance criteria (PC-N) to `openspec/changes/<change-name>/specs/<capability>/spec.md`
-- Tag pages that are likely LCP-critical
+- Tag endpoints that involve Stripe API calls (higher latency budget)
 
 ## Design Phase
 - Include "Performance" section in `openspec/changes/<change-name>/design.md`:
-  - Caching strategy for each data type
-  - Bundle impact estimate for new dependencies
+  - Caching strategy for each data type (cache vs. live fetch)
+  - Stripe API call frequency and rate limit impact
   - Database indexes required
-  - Image optimization approach
+  - Cold start considerations for Edge Functions
 
 ## Tasks Phase
 - Add performance verification tasks in `openspec/changes/<change-name>/tasks.md`
-- Include: bundle analysis, Lighthouse audit, query plan review
+- Include: query plan review, cache hit rate monitoring, Edge Function response time profiling
 
 ## Apply Phase
-- Run `ANALYZE=true npm run build` to verify bundle budgets
-- Run Lighthouse on affected pages (target all "Good" CWV)
 - Verify database indexes are created for new queries
+- Verify Edge Function response times meet targets
+- Confirm Stripe data cache sync operates within rate limits
 
 ---

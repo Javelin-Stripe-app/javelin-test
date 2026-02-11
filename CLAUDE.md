@@ -1,8 +1,9 @@
 # Project Rules (Auto-loaded Every Session)
 
 ## Stack
-Next.js 15 (App Router), TypeScript, React 17 (Stripe App UI) + React 19 (web app), Tailwind CSS, shadcn/ui, Headless UI, Supabase, Stripe Apps, Google OAuth, Zod
+TypeScript, React 17 (Stripe App UI — Stripe UI Toolkit), Supabase (Postgres + RLS + Edge Functions), Stripe Apps, Stripe OAuth, Zod
 Testing: Vitest + Playwright | Package manager: npm | Workflow: SDD (OpenSpec + Clavix)
+No standalone web app. No Next.js, React 19, Tailwind, shadcn/ui, or Headless UI.
 
 ## Security (Non-negotiable)
 
@@ -53,19 +54,12 @@ Testing: Vitest + Playwright | Package manager: npm | Workflow: SDD (OpenSpec + 
 - Use parallel task execution (`Task` tool) for independent work items
 - When implementing from `tasks.md`, execute tasks in dependency order but parallelize independent tasks
 
-## Next.js (App Router)
-- App Router (`app/`) is authoritative
-- Prefer Server Components by default; use `"use client"` only when required
-- Server Actions: only for mutations
-- Keep components modular and colocated with routes or features
-
-## Styling / UI
-- Tailwind for utility styles, shadcn/ui for components, Headless UI for accessible primitives
-- No new UI libs without explicit approval or task reference
-- If `openspec/ui-design-system.md` exists, UI work MUST comply with it
-- If UI work needed and system file missing, run `/interface-design:init` first
-- For simple one-off pages/components, prefer the `frontend-design` skill
-- Stripe App UI extensions use Stripe UI Toolkit only (not Tailwind, shadcn, or Headless UI)
+## Stripe App UI
+- All user-facing UI is the Stripe App extension — there is no standalone web app
+- React 17 only — no React 18/19 features
+- Stripe UI Toolkit components only (`ContextView`, `FocusView`, `Box`, `Button`, etc.)
+- No custom HTML/CSS, no Tailwind, no shadcn/ui, no Headless UI
+- Keep components modular and colocated with views or features
 
 ## Architecture Boundaries
 
@@ -73,7 +67,8 @@ Testing: Vitest + Playwright | Package manager: npm | Workflow: SDD (OpenSpec + 
 - No cross-feature imports — shared code goes in `lib/`, `components/`, `utils/`
 
 ### Data Access (Supabase)
-- UI must not call Supabase REST API directly via raw `fetch()` — use official Supabase client helpers (`createClientComponentClient`, `createServerComponentClient`, `createRouteHandlerClient`) or server-side boundaries
+- Stripe App UI communicates with the backend via HTTP to Supabase Edge Functions
+- Edge Functions handle all Supabase data access — the extension UI never calls Supabase directly
 - For detailed auth patterns and security guidance, see the `security-patterns` skill
 
 ### Stripe Apps (NOT Stripe Payments)
@@ -87,7 +82,7 @@ Stripe Apps are NOT payment integrations — do NOT use Stripe Payments patterns
 - SDK: `@stripe/ui-extension-sdk` — NOT `@stripe/stripe-js` or `@stripe/react-stripe-js`
 - Config: `stripe-app.json` manifest — NOT env vars for Stripe keys
 - CLI: `stripe apps start` for local dev — NOT `stripe listen`
-- Auth: OAuth / Platform key / Restricted key via manifest `stripe_api_access_type`
+- Auth: Stripe OAuth 2.0 (`stripe_api_access_type: "oauth"`, `distribution_type: "public"`)
 - Secrets: Stripe Secret Store API — NOT `.env` for third-party credentials
 
 **Import guards (extension UI code):**
@@ -127,15 +122,17 @@ Load the relevant file before any Stripe App work. Do NOT rely on training data 
 | `publishing-guide.md` | Naming rules, manifest prep, listing fields, image specs, test credentials, review process, rejection checklist | ~1,290 |
 <!-- STRIPE-APPS-DOCS:END -->
 
-### Google OAuth
-- Do not relax OAuth scopes, callback URLs, or token handling without spec reference
+### Stripe OAuth
+- Auth uses Stripe OAuth 2.0 — access tokens (1hr) + refresh tokens (1yr rolling) stored via Stripe Secret Store API
+- Do not relax OAuth scopes, redirect URIs, or token handling without spec reference
+- Permissions: request broadly by category with clear `purpose` fields, scope narrowly by default (see product-vision-strategy.md §11)
 
 ## Coding Standards
 - React components: **PascalCase**
-- Files/folders: **kebab-case** (unless Next.js routing requires otherwise)
-- APIs/routes: REST + Next.js App Router conventions
+- Files/folders: **kebab-case**
+- APIs/routes: Supabase Edge Functions with REST conventions
 - Zod for all input validation (server-side required, client-side optional)
-- ESLint (`next/core-web-vitals`) + Prettier required
+- ESLint + Prettier required
 - Minimal diff: smallest change that satisfies the ticket
 - No unrelated refactors, renames, or formatting-only churn
 - If a shared module is touched, add/adjust tests proportional to risk
@@ -307,19 +304,15 @@ These utilities provide structured workflows for common tasks. Invoke them using
 Before writing code that touches any external library, query Context7 MCP for current docs. Do NOT rely on training data for API patterns.
 
 <!-- @stripe/stripe-js is NOT used in this project — this is a Stripe App, not a Stripe Payments integration -->
+<!-- No Next.js, React 19, Tailwind, shadcn, Headless UI, or Google OAuth in this project -->
 
 | Library | Context7 ID |
 |---------|-------------|
-| Next.js 15 (App Router) | `/vercel/next.js` |
-| React 19 (web app — Stripe App UI uses React 17; see `.stripe-apps-docs/`) | `/websites/react_dev` |
 | Supabase (JS Client) | `/supabase/supabase-js` |
 | Supabase (Platform/RLS) | `/supabase/supabase` |
 | Stripe (Node SDK — backend only) | `/stripe/stripe-node` |
 | Stripe (Docs) | `/websites/stripe` |
-| Google OAuth | `/googleapis/google-auth-library-nodejs` |
-| Tailwind CSS | `/websites/tailwindcss` |
 | Zod | `/colinhacks/zod` |
-| shadcn/ui | `/shadcn-ui/ui` |
-| Headless UI | `/websites/headlessui_com` |
 
+For Stripe App UI patterns, use `.stripe-apps-docs/` (local reference) instead of Context7.
 For any library NOT listed above, use `resolve-library-id` to find its Context7 ID before writing integration code.

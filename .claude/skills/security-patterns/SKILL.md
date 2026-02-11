@@ -1,11 +1,11 @@
 ---
 name: security-patterns
-description: Security knowledge for Next.js + Supabase stack — auth patterns, OWASP checks, threat modeling, and secure implementation guidance.
+description: Security knowledge for Supabase + Stripe Apps stack — auth patterns, OWASP checks, threat modeling, and secure implementation guidance.
 ---
 
 # Security Patterns
 
-Consolidated security knowledge for building secure features on Next.js (App Router) + Supabase + Stripe + Google OAuth.
+Consolidated security knowledge for building secure features on Supabase (Edge Functions) + Stripe Apps + Stripe OAuth.
 
 ## Scope
 
@@ -23,103 +23,66 @@ Consolidated security knowledge for building secure features on Next.js (App Rou
 
 # Authentication & Authorization
 
-## Supabase Auth Patterns
+## Stripe App UI Authentication
 
-This project uses **Supabase Auth** with **Google OAuth**.
+Stripe App UI extensions run inside the Stripe Dashboard. The signed-in Dashboard user is **automatically authenticated** by the Stripe Apps platform. No additional auth logic is needed in extension UI code — the user context is provided via `ExtensionContextValue`.
 
-### Server-Side Auth Pattern
+## Stripe OAuth Flow
+
+This project uses **Stripe OAuth 2.0** for API access (`stripe_api_access_type: "oauth"`, `distribution_type: "public"`).
+
+- Access tokens expire after **1 hour**
+- Refresh tokens expire after **1 year** (rolling — renewed on each exchange)
+- Tokens are stored via the **Stripe Secret Store API** — never in `.env` or application storage
+- Redirect URIs must be whitelisted in `stripe-app.json` (`allowed_redirect_uris`)
+
+## Supabase Edge Functions Auth Pattern
+
+For backend operations, use Supabase Edge Functions with token-based authentication.
 
 ```typescript
-// app/api/some-route/route.ts
-import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs'
-import { cookies } from 'next/headers'
+// supabase/functions/some-function/index.ts
+import { createClient } from '@supabase/supabase-js'
 
-export async function GET(request: Request) {
-  const supabase = createRouteHandlerClient({ cookies })
+Deno.serve(async (req) => {
+  const authHeader = req.headers.get('Authorization')
 
-  // Always verify session first
-  const { data: { session }, error } = await supabase.auth.getSession()
+  if (!authHeader) {
+    return new Response('Unauthorized', { status: 401 })
+  }
 
-  if (!session) {
+  const supabase = createClient(
+    Deno.env.get('SUPABASE_URL')!,
+    Deno.env.get('SUPABASE_ANON_KEY')!,
+    { global: { headers: { Authorization: authHeader } } }
+  )
+
+  const { data: { user }, error } = await supabase.auth.getUser()
+
+  if (!user || error) {
     return new Response('Unauthorized', { status: 401 })
   }
 
   // User ID from session, NEVER from request
-  const userId = session.user.id
+  const userId = user.id
 
   // ... proceed with authenticated logic
-}
+})
 ```
 
-### Server Component Auth Pattern
-
-```typescript
-// app/dashboard/page.tsx
-import { createServerComponentClient } from '@supabase/auth-helpers-nextjs'
-import { cookies } from 'next/headers'
-import { redirect } from 'next/navigation'
-
-export default async function DashboardPage() {
-  const supabase = createServerComponentClient({ cookies })
-  const { data: { session } } = await supabase.auth.getSession()
-
-  if (!session) {
-    redirect('/login')
-  }
-
-  // ... render authenticated UI
-}
-```
-
-### Client Component Auth Pattern
-
-```typescript
-// components/UserProfile.tsx
-'use client'
-
-import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
-import { useEffect, useState } from 'react'
-
-export function UserProfile() {
-  const supabase = createClientComponentClient()
-  const [user, setUser] = useState(null)
-
-  useEffect(() => {
-    const getUser = async () => {
-      const { data: { session } } = await supabase.auth.getSession()
-      setUser(session?.user ?? null)
-    }
-
-    getUser()
-
-    // Listen for auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user ?? null)
-    })
-
-    return () => subscription.unsubscribe()
-  }, [supabase])
-
-  // ... render
-}
-```
-
-### Authorization Rules
+## Authorization Rules
 
 **NEVER bypass Supabase RLS (Row Level Security).**
 
-- User ID comes from `session.user.id`, NEVER from request body/query/headers
+- User ID comes from verified session/token, NEVER from request body/query/headers
 - RLS policies enforce data access control at the database level
 - Every table with user data MUST have RLS enabled
 - Client code CANNOT bypass RLS (it's enforced server-side by Postgres)
 
-### OAuth Scopes
+### Stripe OAuth Permissions
 
-Current scopes (Google OAuth):
-- `email`
-- `profile`
-
-**Do not add scopes** without spec reference and explicit justification.
+- **Request permissions broadly by category** with clear `purpose` fields in the manifest. Downgrading is frictionless (app-controlled), but upgrading requires explicit user re-approval.
+- Do not add Stripe API permissions without spec reference and explicit justification.
 
 ---
 
@@ -140,10 +103,9 @@ const UserCreateSchema = z.object({
   role: z.enum(['user', 'admin']),
 })
 
-export async function POST(request: Request) {
-  const body = await request.json()
+Deno.serve(async (req) => {
+  const body = await req.json()
 
-  // Validate input
   const result = UserCreateSchema.safeParse(body)
 
   if (!result.success) {
@@ -154,9 +116,8 @@ export async function POST(request: Request) {
   }
 
   const validatedData = result.data
-
   // ... proceed with validated data
-}
+})
 ```
 
 ### Validation Checklist
@@ -189,30 +150,48 @@ const query = `SELECT * FROM users WHERE id = '${userId}'`
 
 ## What Goes Where
 
-### Environment Variables (`.env.local`)
+### Environment Variables
 
-**Local development only.** Never commit these files.
+**Local development only (`.env.local`).** Never commit these files.
 
 ```bash
-# .env.local
-NEXT_PUBLIC_SUPABASE_URL=https://xxx.supabase.co
-NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGciOi...
+# .env.local (local dev) / Supabase Dashboard (production)
+SUPABASE_URL=https://xxx.supabase.co
+SUPABASE_ANON_KEY=eyJhbGciOi...
 SUPABASE_SERVICE_ROLE_KEY=eyJhbGciOi...
 STRIPE_SECRET_KEY=sk_test_...
 STRIPE_WEBHOOK_SECRET=whsec_...
-GOOGLE_CLIENT_ID=xxx.apps.googleusercontent.com
-GOOGLE_CLIENT_SECRET=GOCSPX-...
 ```
 
-### Public vs Private
+### Server-Side Only
 
-**NEXT_PUBLIC_*** variables are exposed to the browser. Only use for non-sensitive config.
+All environment variables in Supabase Edge Functions are server-side only. There is no client-side exposure risk as there is no standalone web app.
 
-- `NEXT_PUBLIC_SUPABASE_URL` — OK (public)
-- `NEXT_PUBLIC_SUPABASE_ANON_KEY` — OK (anon key is safe for client)
-- `SUPABASE_SERVICE_ROLE_KEY` — NEVER expose to client (bypasses RLS!)
+- `SUPABASE_URL` — Used by Edge Functions
+- `SUPABASE_ANON_KEY` — Used by Edge Functions (respects RLS)
+- `SUPABASE_SERVICE_ROLE_KEY` — NEVER expose; bypasses RLS!
 - `STRIPE_SECRET_KEY` — Server-only
 - `STRIPE_WEBHOOK_SECRET` — Server-only
+
+### Stripe Secret Store API
+
+For credentials that persist per Stripe account (OAuth tokens, external API keys), use the **Stripe Secret Store API**:
+
+```typescript
+// Store a secret
+await stripe.apps.secrets.create({
+  scope: { type: 'account' },
+  name: 'OAUTH_ACCESS_TOKEN',
+  payload: accessToken,
+})
+
+// Retrieve a secret
+const secret = await stripe.apps.secrets.find({
+  scope: { type: 'account' },
+  name: 'OAUTH_ACCESS_TOKEN',
+  expand: ['payload'],
+})
+```
 
 ### .gitignore
 
@@ -230,9 +209,8 @@ Verify these are ignored:
 ### Secret Stores (Production)
 
 For production, use:
-- Vercel Environment Variables (encrypted)
-- AWS Secrets Manager
-- Doppler / Vault (if applicable)
+- Supabase Dashboard Environment Variables (encrypted, for Edge Functions)
+- Stripe Secret Store API (for per-account third-party credentials)
 
 NEVER hardcode secrets in code, even for "temporary" testing.
 
@@ -288,32 +266,24 @@ For each new feature:
 ## RLS Pattern: User-Owned Data
 
 ```sql
--- Enable RLS
 ALTER TABLE users ENABLE ROW LEVEL SECURITY;
 
--- Policy: Users can only read their own data
 CREATE POLICY "Users can view own profile"
-  ON users
-  FOR SELECT
+  ON users FOR SELECT
   USING (auth.uid() = id);
 
--- Policy: Users can update their own data
 CREATE POLICY "Users can update own profile"
-  ON users
-  FOR UPDATE
+  ON users FOR UPDATE
   USING (auth.uid() = id);
 ```
 
 ## RLS Pattern: Shared Data
 
 ```sql
--- Enable RLS
 ALTER TABLE projects ENABLE ROW LEVEL SECURITY;
 
--- Policy: Users can view projects they belong to
 CREATE POLICY "Users can view own projects"
-  ON projects
-  FOR SELECT
+  ON projects FOR SELECT
   USING (
     EXISTS (
       SELECT 1 FROM project_members
@@ -323,36 +293,17 @@ CREATE POLICY "Users can view own projects"
   );
 ```
 
-## RLS Pattern: Admin-Only Data
-
-```sql
--- Enable RLS
-ALTER TABLE admin_logs ENABLE ROW LEVEL SECURITY;
-
--- Policy: Only admins can view logs
-CREATE POLICY "Admins can view logs"
-  ON admin_logs
-  FOR SELECT
-  USING (
-    EXISTS (
-      SELECT 1 FROM users
-      WHERE users.id = auth.uid()
-      AND users.role = 'admin'
-    )
-  );
-```
-
 ## Bypassing RLS (Service Role)
 
 **Only use `SUPABASE_SERVICE_ROLE_KEY` on the server** for admin operations.
 
 ```typescript
-// Server-side only!
+// Server-side only (Edge Functions)!
 import { createClient } from '@supabase/supabase-js'
 
 const supabaseAdmin = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!, // Bypasses RLS!
+  Deno.env.get('SUPABASE_URL')!,
+  Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!, // Bypasses RLS!
 )
 
 // Use sparingly, only for admin/system operations
@@ -389,7 +340,7 @@ NEVER expose service role key to client.
 // GOOD: Log metadata only
 console.log({
   requestId: generateId(),
-  userId: session.user.id,
+  userId: user.id,
   action: 'user.update',
   timestamp: new Date().toISOString(),
   success: true,
@@ -410,13 +361,14 @@ console.log({
 **ALWAYS verify webhook signatures.** Unsigned webhooks can be forged.
 
 ```typescript
-// app/api/webhooks/stripe/route.ts
-import { stripe } from '@/lib/stripe'
-import { headers } from 'next/headers'
+// supabase/functions/stripe-webhook/index.ts
+import Stripe from 'stripe'
 
-export async function POST(request: Request) {
-  const body = await request.text()
-  const signature = headers().get('stripe-signature')!
+Deno.serve(async (req) => {
+  const body = await req.text()
+  const signature = req.headers.get('stripe-signature')!
+
+  const stripe = new Stripe(Deno.env.get('STRIPE_SECRET_KEY')!)
 
   let event
 
@@ -424,73 +376,56 @@ export async function POST(request: Request) {
     event = stripe.webhooks.constructEvent(
       body,
       signature,
-      process.env.STRIPE_WEBHOOK_SECRET!
+      Deno.env.get('STRIPE_WEBHOOK_SECRET')!
     )
   } catch (err) {
     console.error('Webhook signature verification failed:', err.message)
-    return new Response('Webhook signature verification failed', { status: 400 })
+    return new Response('Webhook Error', { status: 400 })
   }
 
   // ... process verified event
-}
-```
-
-## Price ID Security
-
-**Do not accept price IDs from client.**
-
-```typescript
-// BAD: Client chooses price
-const { priceId } = await request.json() // Client can modify this!
-
-// GOOD: Server determines price based on plan
-const planToPriceId = {
-  starter: process.env.STRIPE_PRICE_STARTER!,
-  pro: process.env.STRIPE_PRICE_PRO!,
-}
-const priceId = planToPriceId[plan]
+})
 ```
 
 ---
 
 # Rate Limiting
 
-## Pattern: Vercel Edge Middleware
+## Pattern: Supabase Edge Function Rate Limiting
 
 ```typescript
-// middleware.ts
-import { NextResponse } from 'next/server'
-import type { NextRequest } from 'next/server'
-import { Ratelimit } from '@upstash/ratelimit'
-import { Redis } from '@upstash/redis'
+// supabase/functions/_shared/rate-limit.ts
+import { createClient } from '@supabase/supabase-js'
 
-const ratelimit = new Ratelimit({
-  redis: Redis.fromEnv(),
-  limiter: Ratelimit.slidingWindow(10, '10 s'), // 10 requests per 10 seconds
-})
+export async function checkRateLimit(req: Request, limit = 10, windowSec = 10) {
+  const ip = req.headers.get('x-forwarded-for') ?? '127.0.0.1'
 
-export async function middleware(request: NextRequest) {
-  const ip = request.ip ?? '127.0.0.1'
-  const { success } = await ratelimit.limit(ip)
+  const supabase = createClient(
+    Deno.env.get('SUPABASE_URL')!,
+    Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,
+  )
 
-  if (!success) {
+  const windowStart = new Date(Date.now() - windowSec * 1000).toISOString()
+  const { count } = await supabase
+    .from('rate_limits')
+    .select('*', { count: 'exact', head: true })
+    .eq('ip', ip)
+    .gte('created_at', windowStart)
+
+  if ((count ?? 0) >= limit) {
     return new Response('Too Many Requests', { status: 429 })
   }
 
-  return NextResponse.next()
-}
-
-export const config = {
-  matcher: '/api/:path*',
+  await supabase.from('rate_limits').insert({ ip })
+  return null // proceed
 }
 ```
 
 ## When to Rate Limit
 
 - All public API endpoints
-- Login/signup endpoints (prevent brute force)
-- Password reset endpoints
-- High-cost operations (image processing, reports)
+- Auth-related endpoints (prevent brute force)
+- High-cost operations (reports, bulk queries)
 
 ---
 
@@ -498,16 +433,16 @@ export const config = {
 
 For detailed checks, see `references/owasp-checklist.md`.
 
-1. **Broken Access Control** → RLS policies, auth checks
-2. **Cryptographic Failures** → HTTPS, env vars, no hardcoded secrets
-3. **Injection** → Parameterized queries, input validation
-4. **Insecure Design** → Threat modeling (STRIDE)
-5. **Security Misconfiguration** → No default passwords, secure headers
-6. **Vulnerable Components** → Dependency scanning (npm audit)
-7. **Identification/Authentication Failures** → Supabase Auth, session checks
-8. **Software/Data Integrity Failures** → Webhook signature verification
-9. **Security Logging Failures** → Log actions, not sensitive data
-10. **SSRF** → Validate/whitelist external URLs
+1. **Broken Access Control** -> RLS policies, auth checks
+2. **Cryptographic Failures** -> HTTPS, env vars, no hardcoded secrets
+3. **Injection** -> Parameterized queries, input validation
+4. **Insecure Design** -> Threat modeling (STRIDE)
+5. **Security Misconfiguration** -> No default passwords, secure headers
+6. **Vulnerable Components** -> Dependency scanning (npm audit)
+7. **Identification/Authentication Failures** -> Stripe OAuth, session checks
+8. **Software/Data Integrity Failures** -> Webhook signature verification
+9. **Security Logging Failures** -> Log actions, not sensitive data
+10. **SSRF** -> Validate/whitelist external URLs
 
 ---
 
@@ -558,12 +493,12 @@ Security concerns must be addressed at every phase of the OpenSpec pipeline:
 # When to Escalate
 
 If you encounter:
-- Security requirement conflicting with spec → Flag the conflict in `openspec/changes/<change-name>/proposal.md` or `design.md`
-- Vulnerability in existing code → Create remediation task in `openspec/changes/<change-name>/tasks.md`
-- Dependency with known CVE → Update dependency, document rationale in `openspec/changes/<change-name>/design.md`
+- Security requirement conflicting with spec -> Flag the conflict in `openspec/changes/<change-name>/proposal.md` or `design.md`
+- Vulnerability in existing code -> Create remediation task in `openspec/changes/<change-name>/tasks.md`
+- Dependency with known CVE -> Update dependency, document rationale in `openspec/changes/<change-name>/design.md`
 
 ---
 
 # References
 
-- `references/owasp-checklist.md` — Detailed OWASP Top 10 checks for Next.js + Supabase
+- `references/owasp-checklist.md` — Detailed OWASP Top 10 checks for Supabase + Stripe Apps
