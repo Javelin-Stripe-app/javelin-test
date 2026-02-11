@@ -126,6 +126,8 @@ These are deliberately out of scope. Javelin does not do these things, even if u
 
 ## 10. Data Principles
 
+### Data Flow Rules
+
 - **Stripe is always the source of truth** for Stripe objects. Current-state views always fetch fresh from the Stripe API. Javelin is not a replica — it's a query layer.
 - **Query-optimized cache** — Javelin maintains a local cache of Stripe data in Supabase to enable filtering and search that the Stripe API doesn't natively support (see §14). This cache is:
   - Auto-synced for recent data (last 60 days) on a rolling basis
@@ -137,6 +139,9 @@ These are deliberately out of scope. Javelin does not do these things, even if u
 - **AI-driven freshness routing** — The AI layer decides per-query whether to use cached data or fetch fresh from Stripe. Historical/aggregate queries use cache. Recency-sensitive queries (today, this week, latest) trigger a refresh first. Single-object lookups always fetch live. Ambiguous cases ask the user (see §12).
 - **Javelin is the source of truth** for workflow definitions, execution logs, user preferences, and changelog/versioning data — things that don't exist in Stripe.
 - **Uninstall = full delete** — When a user removes Javelin, all their data (workflow definitions, execution history, preferences, cached Stripe data) is permanently deleted. No retention.
+
+### Compliance & Auditability Guarantees
+
 - **Execution logs retained 90 days** — Provides transparency ("here's everything Javelin did in your account") then purges. Keeps costs and data liability bounded.
 - **No PII/PHI persistence** — Logs contain request IDs, timestamps, and non-sensitive metadata only. Never store customer PII from Stripe.
 
