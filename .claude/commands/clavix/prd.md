@@ -11,7 +11,7 @@ When you run `/clavix-prd`, I:
 2. **Establish version scope** - Confirm what version we're documenting (v0, v1, v2, etc.)
 3. **Ask focused questions** - About users, problems, features, and success metrics
 4. **Help you prioritize** - Separate must-haves from nice-to-haves
-5. **Create a versioned Mini-PRD** - Saved to `openspec/build/v{X}/prd.md`
+5. **Create a versioned Mini-PRD** - Saved to `openspec/prd-v{x}.md`
 
 **This PRD is scoped to one version/epic, not the entire product.**
 
