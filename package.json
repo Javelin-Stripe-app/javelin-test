@@ -1,0 +1,37 @@
+{
+  "name": "javelin",
+  "version": "0.0.1",
+  "description": "AI-powered Stripe business intelligence — Stripe App extension",
+  "private": true,
+  "scripts": {
+    "build": "tsc --noEmit",
+    "start": "stripe apps start",
+    "lint": "eslint 'src/**/*.{ts,tsx}'",
+    "lint:fix": "eslint 'src/**/*.{ts,tsx}' --fix",
+    "format": "prettier --write 'src/**/*.{ts,tsx}'",
+    "format:check": "prettier --check 'src/**/*.{ts,tsx}'",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:e2e": "playwright test"
+  },
+  "dependencies": {
+    "@stripe/ui-extension-sdk": "^9.1.0",
+    "stripe": "^20.3.1",
+    "zod": "^4.3.6"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.44.0",
+    "@supabase/supabase-js": "^2.95.3",
+    "@types/react": "^17.0.80",
+    "@types/react-dom": "^17.0.25",
+    "@typescript-eslint/eslint-plugin": "^7.0.0",
+    "@typescript-eslint/parser": "^7.0.0",
+    "eslint": "^8.57.0",
+    "eslint-config-prettier": "^9.1.0",
+    "eslint-plugin-react": "^7.34.0",
+    "eslint-plugin-react-hooks": "^4.6.0",
+    "prettier": "^3.2.0",
+    "typescript": "^5.4.0",
+    "vitest": "^1.6.0"
+  }
+}

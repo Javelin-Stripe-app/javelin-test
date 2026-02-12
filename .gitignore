@@ -2,7 +2,8 @@ node_modules/
 .env*
 .DS_Store
 dist/
-.next/
 .ops
 .clavix
 .claude
+coverage/
+*.tsbuildinfo
