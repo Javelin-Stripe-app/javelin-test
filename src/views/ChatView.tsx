@@ -5,7 +5,7 @@ import ChatThread from '../components/ChatThread';
 import ChatInput from '../components/ChatInput';
 import WelcomePrompt from '../components/WelcomePrompt';
 import ConversationList from '../components/ConversationList';
-import { apiClient } from '../lib/api-client';
+import { apiClient, initApiClient } from '../lib/api-client';
 
 interface Message {
   id: string;
@@ -27,7 +27,11 @@ interface Conversation {
 
 type ViewState = 'loading' | 'empty' | 'chat' | 'error';
 
-const ChatView = ({ userContext: _userContext, environment: _environment }: ExtensionContextValue) => {
+const ChatView = ({ userContext, environment: _environment }: ExtensionContextValue) => {
+  // Initialize API client with Stripe context for signature verification
+  if (userContext?.id && userContext?.account?.id) {
+    initApiClient(userContext.id, userContext.account.id);
+  }
   const [viewState, setViewState] = useState<ViewState>('loading');
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [activeConversationId, setActiveConversationId] = useState<string | null>(null);

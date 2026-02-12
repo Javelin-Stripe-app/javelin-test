@@ -9,7 +9,7 @@ import { generateInsights } from '../_shared/insight-engine.ts';
 import { z } from 'https://esm.sh/zod@3';
 
 const chatMessageRequestSchema = z.object({
-  conversationId: z.string().uuid().optional(),
+  conversationId: z.string().uuid().nullish(),
   content: z.string().min(1).max(4000),
 });
 
@@ -217,15 +217,8 @@ serve(async (req) => {
   try {
     const auth = await authenticateRequest(req);
 
-    // Parse and validate request body
-    let body: Record<string, unknown>;
-    try {
-      body = await req.json();
-    } catch {
-      return errorResponse('invalid_json', 'Request body must be valid JSON', requestId, 400);
-    }
-
-    const parsed = chatMessageRequestSchema.safeParse(body);
+    // Validate request body (already parsed by authenticateRequest)
+    const parsed = chatMessageRequestSchema.safeParse(auth.body);
     if (!parsed.success) {
       return errorResponse(
         'validation_error',

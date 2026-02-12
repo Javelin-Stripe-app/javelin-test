@@ -38,15 +38,8 @@ serve(async (req) => {
   try {
     const auth = await authenticateRequest(req);
 
-    // Parse and validate request body
-    let body: Record<string, unknown>;
-    try {
-      body = await req.json();
-    } catch {
-      return errorResponse('invalid_json', 'Request body must be valid JSON', requestId, 400);
-    }
-
-    const parsed = syncBackfillRequestSchema.safeParse(body);
+    // Validate request body (already parsed by authenticateRequest)
+    const parsed = syncBackfillRequestSchema.safeParse(auth.body);
     if (!parsed.success) {
       return errorResponse(
         'validation_error',

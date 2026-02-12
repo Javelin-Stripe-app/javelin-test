@@ -81,8 +81,8 @@ serve(async (req) => {
   const corsResponse = handleCors(req);
   if (corsResponse) return corsResponse;
 
-  if (req.method !== 'GET') {
-    return errorResponse('method_not_allowed', 'Use GET method', crypto.randomUUID(), 405);
+  if (req.method !== 'GET' && req.method !== 'POST') {
+    return errorResponse('method_not_allowed', 'Use GET or POST method', crypto.randomUUID(), 405);
   }
 
   const requestId = crypto.randomUUID();

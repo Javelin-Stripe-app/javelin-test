@@ -8,11 +8,15 @@ import {
 } from '@stripe/ui-extension-sdk/ui';
 import type { ExtensionContextValue } from '@stripe/ui-extension-sdk/context';
 import { useState, useEffect, useCallback } from 'react';
-import { apiClient } from '../lib/api-client';
+import { apiClient, initApiClient } from '../lib/api-client';
 
 type OnboardingState = 'processing' | 'success' | 'error';
 
-const OnboardingView = ({ userContext: _userContext, oauthContext }: ExtensionContextValue) => {
+const OnboardingView = ({ userContext, oauthContext }: ExtensionContextValue) => {
+  // Initialize API client with Stripe context for signature verification
+  if (userContext?.id && userContext?.account?.id) {
+    initApiClient(userContext.id, userContext.account.id);
+  }
   const [state, setState] = useState<OnboardingState>('processing');
   const [errorMessage, setErrorMessage] = useState<string>('');
 

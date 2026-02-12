@@ -11,7 +11,7 @@ serve(async (req) => {
 
   try {
     const auth = await authenticateRequest(req);
-    const { code, state, verifier } = await req.json();
+    const { code, state, verifier } = auth.body as { code?: string; state?: string; verifier?: string };
 
     if (!code || !state) {
       return errorResponse('invalid_request', 'Missing code or state parameter', requestId, 400);
