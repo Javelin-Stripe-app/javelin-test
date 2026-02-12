@@ -155,6 +155,16 @@ Success signals for v0, ranked by priority:
 
 See `openspec/product-vision-strategy.md` for full core platform decisions (§8-§10).
 
+### Design Constraints (Stripe App UI Boundaries)
+
+- **34 Stripe UI Toolkit components only** — all UI must be composed from Toolkit components imported from `@stripe/ui-extension-sdk/ui`. No raw HTML elements.
+- **No CSS frameworks** — no Tailwind, CSS Modules, styled-components, or CSS file imports. Styling uses `Box`/`Inline` `css` prop with design tokens only.
+- **No DOM access** — sandboxed iframe prevents refs, querySelector, localStorage, custom animations, drag-and-drop, file uploads, or canvas/SVG.
+- **No custom fonts or colors** — limited to Stripe's semantic color tokens and font tokens. No hex values, RGB, or arbitrary spacing.
+- **Fixed viewport** — ContextView renders in a fixed-width drawer; FocusView takes full width. No responsive breakpoints or media queries.
+- **Serialization constraints** — functions become async when proxied; only serializable data types allowed as component props (no `Map`, `Set`, `Date` objects).
+- Full analysis: `.ops/analysis/stripe-app-design-boundaries.md`
+
 ### Constraints
 
 - **Stripe API rate limit:** 25 req/sec — cache and batch to stay within limits

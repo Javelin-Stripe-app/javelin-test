@@ -57,9 +57,21 @@ No standalone web app. No Next.js, React 19, Tailwind, shadcn/ui, or Headless UI
 ## Stripe App UI
 - All user-facing UI is the Stripe App extension — there is no standalone web app
 - React 17 only — no React 18/19 features
-- Stripe UI Toolkit components only (`ContextView`, `FocusView`, `Box`, `Button`, etc.)
+- Stripe UI Toolkit components only (`ContextView`, `FocusView`, `Box`, `Button`, etc.) — 34 components total
 - No custom HTML/CSS, no Tailwind, no shadcn/ui, no Headless UI
+- No CSS Modules, no styled-components, no CSS-in-JS, no `.css` file imports
 - Keep components modular and colocated with views or features
+
+### Styling Constraints (Stripe Apps Serialization Model)
+- UI extensions run in a sandboxed iframe — the React tree is serialized and passed to the Stripe Dashboard for rendering
+- The actual DOM is inaccessible from app code — no `ref` props, no `document.querySelector`, no DOM manipulation
+- **Only `Box` and `Inline` accept the `css` prop** — all other components have preset styles that cannot be overridden
+- The `css` prop accepts a **constrained object with design tokens** — not arbitrary CSS strings or class names
+- Available tokens: spacing (`xxsmall`–`xxlarge`), semantic colors (`primary`, `success`, `container`), font tokens (`heading`), layout (`stack: 'x'|'y'|'z'`)
+- No custom fonts, hex colors, RGB values, arbitrary spacing values, or CSS animations
+- No responsive breakpoints or media queries — viewport is fixed by view type
+- No localStorage, indexedDB, or BroadcastChannel (sandboxed iframe has `null` origin)
+- Full design boundaries analysis: `.ops/analysis/stripe-app-design-boundaries.md`
 
 ## Architecture Boundaries
 
@@ -90,7 +102,11 @@ Stripe Apps are NOT payment integrations — do NOT use Stripe Payments patterns
 - NEVER use `loadStripe()` or `Elements` provider
 - NEVER use React 18/19 APIs (`useTransition`, `useDeferredValue`, `use()`, etc.)
 - NEVER use custom HTML/CSS — only Stripe UI Toolkit components
+- NEVER import `.css`, `.module.css`, or any CSS files
+- NEVER import styling libraries (`styled-components`, `emotion`, `tailwindcss`, etc.)
+- NEVER use raw HTML elements (`<div>`, `<span>`, `<input>`, `<form>`, etc.) in extension views
 - ALWAYS import from `@stripe/ui-extension-sdk`
+- ALWAYS use `Box` and `Inline` with design token `css` prop for layout and styling
 - ALWAYS check `stripe-app.json` permissions before calling external APIs
 - ALWAYS use Secret Store API for persisting third-party credentials
 
@@ -133,6 +149,8 @@ Load the relevant file before any Stripe App work. Do NOT rely on training data 
 - APIs/routes: Supabase Edge Functions with REST conventions
 - Zod for all input validation (server-side required, client-side optional)
 - ESLint + Prettier required
+- All UI layout uses `Box` with design tokens — no raw HTML, no external CSS
+- Custom React components must only render Stripe UI Toolkit components in JSX
 - Minimal diff: smallest change that satisfies the ticket
 - No unrelated refactors, renames, or formatting-only churn
 - If a shared module is touched, add/adjust tests proportional to risk
@@ -215,13 +233,13 @@ Activate these skills based on the work context:
 | Auth, data access, external APIs | `security-patterns` | Any security-adjacent code |
 | Schema changes | `db-migration` | Adding/modifying database tables |
 | UI components, interactive features | `ux-states` | Ensuring loading/empty/error/populated states |
-| Dashboard/app interfaces | `interface-design` | Complex UI layouts |
-| Simple one-off pages | `frontend-design` | Quick UI work |
 | API endpoints | `api-contracts` | Adding/modifying route handlers |
 | Writing tests | `testing-strategy` | Test architecture decisions |
-| Performance work | `performance-patterns` | Bundle, CWV, caching, query optimization |
+| Performance work | `performance-patterns` | Caching, query optimization |
 | Deployments | `deployment-lifecycle` | Feature flags, env vars, rollback |
 | Regulated data (PHI/PII) | `compliance-patterns` | HIPAA, audit trails |
+
+> **Removed skills:** `interface-design` and `frontend-design` are incompatible with Stripe Apps — they assume custom CSS, HTML elements, and DOM access. All UI design must use Stripe UI Toolkit's 34 components with design token styling only. See `.ops/analysis/stripe-app-design-boundaries.md`.
 
 ### Skill-to-Phase Quick Reference
 
@@ -233,7 +251,6 @@ Activate these skills based on the work context:
 | `performance-patterns` | * | ** | ** | * | ** |
 | `deployment-lifecycle` | | | ** | ** | ** |
 | `db-migration` | * | * | ** | ** | ** |
-| `interface-design` | | * | ** | * | |
 | `ux-states` | | * | ** | * | |
 | `compliance-patterns` | * | * | ** | * | ** |
 

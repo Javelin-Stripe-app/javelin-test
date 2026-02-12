@@ -111,13 +111,15 @@
 ## 15. Technical Non-Goals
 
 1. **No React 18/19** — Stripe UI Toolkit requires React 17. There is no web app frontend.
-2. **No custom HTML/CSS in Stripe App UI** — Stripe UI Toolkit components only for extension UI.
-3. **No `@stripe/stripe-js` or `@stripe/react-stripe-js`** — This is a Stripe App, not a Stripe Payments integration.
-4. **No standalone web app** — No Next.js, no Tailwind/shadcn/Headless UI. The only user-facing UI is the Stripe App extension.
-5. **No on-premise or self-hosted deployment** — Cloud-only (Supabase).
-6. **No legacy browser support** — Modern browsers only.
-7. **No real-time collaboration** — Single-user workflows. Multi-user collaboration is not in scope.
-8. **No data warehouse or ETL pipelines** — Javelin maintains a query-optimized cache (§10), not a replicated dataset. The cache is bounded, ephemeral, and always secondary to the Stripe API as source of truth.
+2. **No custom HTML/CSS in Stripe App UI** — Stripe UI Toolkit components only (34 components). No raw HTML elements (`<div>`, `<span>`, `<input>`) — the React tree is serialized and only Toolkit components are recognized.
+3. **No CSS frameworks or custom styling** — No Tailwind, CSS Modules, styled-components, CSS-in-JS, or `.css` file imports. Styling is limited to the `css` prop on `Box` and `Inline` with Stripe's design token system (semantic colors, spacing tokens, font tokens). No custom fonts, hex colors, or arbitrary values.
+4. **No `@stripe/stripe-js` or `@stripe/react-stripe-js`** — This is a Stripe App, not a Stripe Payments integration.
+5. **No standalone web app** — No Next.js, no shadcn/Headless UI. The only user-facing UI is the Stripe App extension.
+6. **No DOM access** — Sandboxed iframe with `null` origin. No `ref` props, no `document.querySelector`, no localStorage, no indexedDB, no BroadcastChannel, no Web Workers.
+7. **No on-premise or self-hosted deployment** — Cloud-only (Supabase).
+8. **No legacy browser support** — Modern browsers only.
+9. **No real-time collaboration** — Single-user workflows. Multi-user collaboration is not in scope.
+10. **No data warehouse or ETL pipelines** — Javelin maintains a query-optimized cache (§10), not a replicated dataset. The cache is bounded, ephemeral, and always secondary to the Stripe API as source of truth.
 
 ---
 

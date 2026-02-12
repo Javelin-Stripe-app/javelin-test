@@ -7,14 +7,17 @@ context: |
   Auth: Stripe OAuth 2.0 (access tokens via Secret Store API)
   Validation: Zod (server-side required, client-side optional)
   Testing: Vitest + Playwright | Package manager: npm
-  Agent Skills: vercel-react-best-practices, web-design-guidelines, vercel-composition-patterns,
+  Agent Skills: vercel-react-best-practices, vercel-composition-patterns,
     compliance-patterns, db-migration, security-patterns, ux-states, testing-strategy,
-    api-contracts, performance-patterns, deployment-lifecycle, sdd-phase-gates,
-    frontend-design, interface-design
+    api-contracts, performance-patterns, deployment-lifecycle, sdd-phase-gates
+  Removed Skills (Stripe Apps incompatible): web-design-guidelines, frontend-design, interface-design
+    — these assume custom CSS, HTML elements, and DOM access which are impossible in Stripe Apps.
+    See .ops/analysis/stripe-app-design-boundaries.md for full constraints.
+  UI Design Constraints: Stripe UI Toolkit only (34 components). Styling via Box/Inline css prop
+    with design tokens. No custom CSS, Tailwind, CSS Modules, styled-components, or raw HTML.
   Docs: Use Context7 MCP server to look up current documentation for any stack library (see CLAUDE.md "External Documentation" section for library IDs)
 
   When writing proposals, reference vercel-composition-patterns for component architecture.
-  When writing specs, include accessibility scenarios from web-design-guidelines.
   When writing specs, include security acceptance criteria from security-patterns.
   When writing specs, enumerate all UI states (loading, empty, populated, error) per ux-states.
   When writing specs, format acceptance criteria as testable AC-N statements per testing-strategy.
@@ -37,8 +40,8 @@ context: |
   When writing tasks, add deployment tasks (env vars, feature flags, smoke tests) per deployment-lifecycle.
   When writing tasks, add migration tasks if schema changes per db-migration.
   When applying changes, run sdd-phase-gates checklists before advancing phases.
-  When applying changes, apply frontend-design skill for UI code generation.
-  When applying changes, apply interface-design skill for dashboard/app interfaces.
+  When applying changes, use only Stripe UI Toolkit components (Box, Inline, ContextView, etc.) for UI code generation.
+  When applying changes, reference .stripe-apps-docs/ui-components.md for available components and patterns.
   When handling regulated data, apply compliance-patterns for data classification and audit trails.
 
 rules:
