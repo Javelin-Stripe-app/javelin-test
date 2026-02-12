@@ -33,7 +33,7 @@ Stripe gives you transactions, not answers. The data exists in the platform, but
 - **Export-to-spreadsheet is the workaround** — "Most indie hackers I know either build janky spreadsheets every month or just don't track metrics properly."
 - **API pagination nightmare** — Getting aggregate data requires paging through thousands of records, hitting Stripe's rate limits. No aggregate endpoints exist.
 
-**Why this matters now:** Stripe has no plans to solve this. Sigma (their SQL product) doesn't answer these questions either. Every founder ends up rebuilding the same analytics. Javelin can make this a zero-effort outcome.
+**Why this matters now:** Stripe has no plans to solve this. Sigma (their SQL product) can technically surface some of this data, but it requires SQL fluency and significant manual effort — it's impractical for non-technical users and time-consuming even for technical ones. Every founder ends up rebuilding the same analytics. Javelin can make this a zero-effort outcome.
 
 **Research basis:** 45+ verbatim user quotes from Hacker News, Stack Overflow, GitHub Issues, Indie Hackers, and Stripe Community forums. See `.ops/research/research examples.csv` for full dataset.
 
@@ -47,7 +47,7 @@ Stripe gives you transactions, not answers. The data exists in the platform, but
 **Secondary goal:**
 - The AI proactively surfaces insights the user didn't ask about, creating a "magic" experience — "here's something I noticed about your business."
 
-**The aha moment:** User installs Javelin, asks "What's my MRR?", gets an accurate answer in seconds. Then sees an unsolicited insight like "Your Pro plan grew 23% this month, but Basic plan churn doubled." That's when they're hooked.
+**The aha moment:** User installs Javelin, asks "What's my MRR?", gets an accurate answer in seconds. Then, appended to that answer, sees an unsolicited insight like "By the way — your Pro plan grew 23% this month, but Basic plan churn doubled. And your MRR growth is in the top quartile of similar businesses." That's when they're hooked.
 
 ---
 
@@ -57,13 +57,15 @@ These are the **non-negotiables** for this version:
 
 1. **Stripe data cache** — Query-optimized local cache of Stripe data in Supabase. Auto-syncs recent data (60-day rolling window), on-demand backfill for historical queries (up to 24 months), AI-driven freshness routing (decides per-query whether to use cache or fetch live).
 
-2. **SaaS metrics engine** — Calculates business metrics Stripe doesn't provide natively: MRR, churn rate, ARPU, LTV, revenue by product/plan. Derived from cached Stripe data (subscriptions, invoices, charges, customers).
+2. **SaaS metrics engine** — Calculates business metrics Stripe doesn't provide natively: MRR, churn rate, ARPU, LTV, revenue by product/plan. Derived from cached Stripe data (subscriptions, invoices, charges, customers). All metric definitions must align with [Stripe's official billing metric definitions](https://docs.stripe.com/billing/subscriptions/analytics#billing-metric-definitions) as the canonical source of truth — this prevents "my MRR doesn't match Stripe" confusion and ensures consistency with the platform users already trust. The AI must be pre-loaded with these definitions so it calculates and explains metrics the same way Stripe does.
 
-3. **AI chat interface** — Plain-language Q&A inside the Stripe Dashboard drawer. Users type business questions, get accurate answers with supporting data. Chat-style UX with guided prompts to help users know what to ask. Clear visual indicator during AI processing ("thinking... Xs").
+3. **AI chat interface** — Plain-language Q&A inside the Stripe Dashboard drawer. Users type business questions, get accurate answers with supporting data. Chat-style UX with guided prompts to help users know what to ask. Clear visual indicator during AI processing ("thinking... Xs"). The AI has a **strong clarification bias** — when a question is ambiguous, it asks before assuming. Key ambiguity domains include: temporal scope ("last month" = last 30 days or last calendar month?), metric definitions (gross vs net churn?), and entity scope (all products or a specific one?). This prevents confident-but-wrong answers that erode trust.
 
-4. **Proactive insights** — On session start, the AI surfaces notable findings the user didn't ask about: anomalies, trends, risks, opportunities. Examples: "Churn spiked 3x this week," "Your Enterprise plan revenue overtook Pro for the first time," "12 annual subscriptions expire next month."
+4. **Proactive insights** — The AI surfaces notable findings the user didn't ask about: anomalies, trends, risks, opportunities. **Timing matters:** insights are delivered *after* answering the user's question, not before — users who open Javelin have a question they want answered, and unsolicited analysis before that answer creates friction. Insights should feel like a knowledgeable colleague adding context: "Your revenue last calendar month was $42,000. By the way — 35% of that came from Europe, up from 22% last quarter." For sessions where the user browses without asking a question, insights can surface as a welcome prompt. Examples: "Churn spiked 3x this week," "Your Enterprise plan revenue overtook Pro for the first time," "12 annual subscriptions expire next month."
 
 5. **Persistent chat + business context** — Conversations are saved and accessible across sessions. The AI accumulates a lightweight business profile over time (industry, key products, pricing model, important metrics) so it doesn't re-learn the business every session. Scoped per Stripe account.
+
+6. **Peer benchmarking insights** — Leverages [Stripe's benchmarking data](https://docs.stripe.com/billing/subscriptions/analytics/benchmarking) to contextualize a user's metrics against similar businesses. Stripe compares against 100+ peer businesses (matched by industry, ARR, ARPU via k-nearest-neighbors) across seven metrics: gross/net MRR churn, subscriber churn, subscriber/revenue retention, MRR growth, LTV, ARPU, and trial conversion. Javelin surfaces these comparisons as proactive insights — e.g., "Your subscriber churn rate is 2x the median for businesses your size" or "Your trial conversion rate is in the top quartile of your peer group." Requires the user's Stripe account to meet benchmarking eligibility (5+ active subscriptions, 1+ paid subscription in the past year).
 
 ---
 
@@ -116,13 +118,13 @@ Success signals for v0, ranked by priority:
 
 - AI must confirm before any write operation (v0 is read-only, but the pattern must be established)
 - Answers must include a freshness indicator: "Data as of [timestamp]" for cached data, "Live data" for fresh Stripe API fetches
-- AI asks for clarification when intent is ambiguous rather than guessing (clarification bias)
+- AI has a strong clarification bias — asks before assuming when intent is ambiguous (temporal scope, metric definition, entity scope). See must-have #3 for detail.
 - All interactions happen inside the Stripe Dashboard drawer/panel — no external UI
 - Data accuracy for business metrics must target 100% (MRR, revenue, counts must be exact)
 - Insight accuracy target is 80-90% (directionally correct analysis is acceptable)
 - Chat history persists across sessions per Stripe account
 - Business context profile accumulates over time — AI should not re-ask questions it's already learned the answer to
-- Proactive insights surface on session start, reflecting changes since last visit
+- Proactive insights surface *after* answering the user's question, not on session start. For idle/browsing sessions without a question, insights can surface as a welcome prompt.
 - Uninstall triggers full data deletion (cache, chat history, business context, execution logs)
 
 ### Non-Functional Requirements
@@ -174,6 +176,7 @@ See `openspec/product-vision-strategy.md` for full security and compliance postu
 - **LLM provider API** — Chat and insights generation (Kimi K2 / DeepSeek / ChatGPT)
 - **Supabase** — Backend infrastructure (Edge Functions, Postgres, auth)
 - **Stripe CLI** — Required for local development and testing (`stripe apps start`)
+- **Stripe Benchmarking API** — Peer comparison data for proactive insights (requires user eligibility: 5+ active subscriptions)
 - **~10 beta testers** — Invite-only via test/sandbox Stripe App install (no Marketplace approval needed for v0)
 
 ---
