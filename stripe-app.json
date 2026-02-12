@@ -1,12 +1,12 @@
 {
   "allowed_redirect_uris": [
-    "https://dashboard.stripe.com/test/apps-oauth/com.javelin.ai",
-    "https://dashboard.stripe.com/apps-oauth/com.javelin.ai"
+    "https://dashboard.stripe.com/test/apps-oauth/com.javelin.analytics",
+    "https://dashboard.stripe.com/apps-oauth/com.javelin.analytics"
   ],
   "connect_permissions": null,
-  "distribution_type": "public",
+  "distribution_type": "private",
   "icon": "./icon.png",
-  "id": "com.javelin.ai",
+  "id": "com.javelin.analytics",
   "name": "Javelin",
   "permissions": [
     {
@@ -65,5 +65,5 @@
       }
     ]
   },
-  "version": "0.0.1"
+  "version": "0.0.3"
 }

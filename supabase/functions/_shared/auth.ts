@@ -34,19 +34,19 @@ export async function authenticateRequest(req: Request): Promise<AuthContext> {
     throw new AuthError('Missing user_id or account_id in request body', 'invalid_request', 401);
   }
 
-  // Verify signature if available and app secret is configured
-  if (signature && stripe && STRIPE_APP_SECRET) {
-    const payload = JSON.stringify({ user_id: userId, account_id: stripeAccountId });
-    try {
-      stripe.webhooks.signature.verifyHeader(payload, signature, STRIPE_APP_SECRET);
-    } catch {
-      throw new AuthError('Invalid signature', 'invalid_signature', 401);
+  // In dev mode, skip all signature verification and trust the body
+  if (!DEV_MODE) {
+    if (signature && stripe && STRIPE_APP_SECRET) {
+      const payload = JSON.stringify({ user_id: userId, account_id: stripeAccountId });
+      try {
+        stripe.webhooks.signature.verifyHeader(payload, signature, STRIPE_APP_SECRET);
+      } catch {
+        throw new AuthError('Invalid signature', 'invalid_signature', 401);
+      }
+    } else if (!signature) {
+      throw new AuthError('Missing stripe-signature header', 'missing_signature', 401);
     }
-  } else if (!DEV_MODE && !signature) {
-    // In production (non-dev mode), require a signature
-    throw new AuthError('Missing stripe-signature header', 'missing_signature', 401);
   }
-  // In dev mode without signature, trust user_id and account_id from body
 
   // Create Supabase client with service role key
   const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);

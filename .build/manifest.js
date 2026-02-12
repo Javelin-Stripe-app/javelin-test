@@ -2,7 +2,7 @@
 import ChatView from '../src/views/ChatView';import SettingsView from '../src/views/SettingsView';import OnboardingView from '../src/views/OnboardingView';
 
 export * from '@stripe/ui-extension-sdk/version';
-export const BUILD_TIME = '2026-02-12 16:37:52.329661 -0300 -03 m=+0.574072727';
+export const BUILD_TIME = '2026-02-12 17:00:22.482665 -0300 -03 m=+31.542380935';
 
 export { 
   ChatView,	
@@ -14,13 +14,13 @@ export {
 
 export default {
   "allowed_redirect_uris": [
-    "https://dashboard.stripe.com/test/apps-oauth/com.javelin.ai",
-    "https://dashboard.stripe.com/apps-oauth/com.javelin.ai"
+    "https://dashboard.stripe.com/test/apps-oauth/com.javelin.analytics",
+    "https://dashboard.stripe.com/apps-oauth/com.javelin.analytics"
   ],
   "connect_permissions": null,
-  "distribution_type": "public",
+  "distribution_type": "private",
   "icon": "./icon.png",
-  "id": "com.javelin.ai",
+  "id": "com.javelin.analytics",
   "name": "Javelin",
   "permissions": [
     {
@@ -79,5 +79,5 @@ export default {
       }
     ]
   },
-  "version": "0.0.1"
+  "version": "0.0.3"
 };
