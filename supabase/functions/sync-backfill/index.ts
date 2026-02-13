@@ -2,6 +2,8 @@ import { serve } from 'https://deno.land/std@0.168.0/http/server.ts';
 import { corsHeaders, handleCors } from '../_shared/cors.ts';
 import { authenticateRequest, AuthError } from '../_shared/auth.ts';
 import { jsonResponse, errorResponse } from '../_shared/response.ts';
+import { runSyncJob } from '../_shared/sync-engine.ts';
+import { getStripeAccessToken, TokenError } from '../_shared/stripe-token.ts';
 import { z } from 'https://esm.sh/zod@3';
 
 const VALID_OBJECT_TYPES = [
@@ -105,15 +107,47 @@ serve(async (req) => {
       return errorResponse('db_error', 'Failed to create backfill jobs', requestId, 500);
     }
 
+    // Resolve per-account Stripe access token
+    const stripeAccessToken = await getStripeAccessToken(auth.supabase, auth.stripeAccountId);
+
+    const results: { objectType: string; status: string; synced: number; error?: string }[] = [];
+
+    for (const job of jobs) {
+      try {
+        await runSyncJob(
+          auth.supabase,
+          stripeAccessToken,
+          auth.stripeAccountId,
+          job.id,
+          job.object_type,
+          { startDate, endDate },
+        );
+        results.push({ objectType: job.object_type, status: 'completed', synced: 0 });
+      } catch (error) {
+        const errMsg = error instanceof Error ? error.message : 'Unknown error';
+        console.error(`Backfill job ${job.id} failed for ${job.object_type}:`, errMsg);
+        results.push({ objectType: job.object_type, status: 'failed', synced: 0, error: errMsg });
+      }
+    }
+
+    const succeeded = results.filter((r) => r.status === 'completed').length;
+    const failed = results.filter((r) => r.status === 'failed').length;
+
     return jsonResponse({
       jobId,
       objectTypes,
-      status: 'pending',
+      status: failed === 0 ? 'completed' : 'partial',
       jobCount: jobs.length,
+      succeeded,
+      failed,
+      results,
       dateRange: { startDate, endDate },
     });
   } catch (error) {
     if (error instanceof AuthError) {
+      return errorResponse(error.code, error.message, requestId, error.status);
+    }
+    if (error instanceof TokenError) {
       return errorResponse(error.code, error.message, requestId, error.status);
     }
     console.error('Sync backfill error:', requestId, error);

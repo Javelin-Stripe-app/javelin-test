@@ -2,6 +2,7 @@ import { serve } from 'https://deno.land/std@0.168.0/http/server.ts';
 import { corsHeaders, handleCors } from '../_shared/cors.ts';
 import { authenticateRequest, AuthError } from '../_shared/auth.ts';
 import { jsonResponse, errorResponse } from '../_shared/response.ts';
+import { getStripeAccessToken, TokenError } from '../_shared/stripe-token.ts';
 
 serve(async (req) => {
   const corsResponse = handleCors(req);
@@ -12,8 +13,17 @@ serve(async (req) => {
   try {
     const auth = await authenticateRequest(req);
 
-    // Token refresh is handled by the UI via the Stripe SDK's Secret Store
-    // This endpoint validates the current session and logs the refresh
+    // Trigger token refresh if needed (getStripeAccessToken handles refresh internally)
+    await getStripeAccessToken(auth.supabase, auth.stripeAccountId);
+
+    // Read back the actual expiry from the database
+    const { data: tokenRow } = await auth.supabase
+      .from('oauth_tokens')
+      .select('token_expires_at')
+      .eq('stripe_account_id', auth.stripeAccountId)
+      .single();
+
+    const expiresAt = tokenRow?.token_expires_at || new Date(Date.now() + 3600000).toISOString();
 
     await auth.supabase
       .from('audit_logs')
@@ -24,9 +34,12 @@ serve(async (req) => {
         metadata: { user_id: auth.userId },
       });
 
-    return jsonResponse({ expiresAt: new Date(Date.now() + 3600000).toISOString() });
+    return jsonResponse({ expiresAt });
   } catch (error) {
     if (error instanceof AuthError) {
+      return errorResponse(error.code, error.message, requestId, error.status);
+    }
+    if (error instanceof TokenError) {
       return errorResponse(error.code, error.message, requestId, error.status);
     }
     console.error('Auth refresh error:', requestId, error);

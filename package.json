@@ -12,7 +12,9 @@
     "format:check": "prettier --check 'src/**/*.{ts,tsx}'",
     "test": "vitest run",
     "test:watch": "vitest",
-    "test:e2e": "playwright test"
+    "test:e2e": "playwright test",
+    "seed": "tsx scripts/seed-stripe-test-data.ts",
+    "seed:clean": "tsx scripts/seed-stripe-test-data.ts --clean"
   },
   "dependencies": {
     "@stripe/ui-extension-sdk": "^9.1.0",
@@ -32,6 +34,7 @@
     "eslint-plugin-react-hooks": "^4.6.0",
     "prettier": "^3.2.0",
     "typescript": "^5.4.0",
+    "tsx": "^4.19.0",
     "vitest": "^1.6.0"
   }
 }

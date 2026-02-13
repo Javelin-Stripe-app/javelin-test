@@ -2,6 +2,9 @@ import { serve } from 'https://deno.land/std@0.168.0/http/server.ts';
 import { corsHeaders, handleCors } from '../_shared/cors.ts';
 import { authenticateRequest, AuthError } from '../_shared/auth.ts';
 import { jsonResponse, errorResponse } from '../_shared/response.ts';
+import { storeOAuthTokens, TokenError } from '../_shared/stripe-token.ts';
+
+const STRIPE_SECRET_KEY = Deno.env.get('STRIPE_SECRET_KEY') || '';
 
 serve(async (req) => {
   const corsResponse = handleCors(req);
@@ -17,15 +20,21 @@ serve(async (req) => {
       return errorResponse('invalid_request', 'Missing code or state parameter', requestId, 400);
     }
 
-    // Exchange authorization code for tokens via Stripe OAuth
-    const STRIPE_CLIENT_ID = Deno.env.get('STRIPE_CLIENT_ID')!;
-    const tokenResponse = await fetch('https://connect.stripe.com/oauth/token', {
+    if (!STRIPE_SECRET_KEY) {
+      return errorResponse('missing_config', 'STRIPE_SECRET_KEY is not configured', requestId, 500);
+    }
+
+    // Exchange authorization code for tokens via Stripe Apps OAuth
+    // Uses api.stripe.com (NOT connect.stripe.com) with Basic auth
+    const tokenResponse = await fetch('https://api.stripe.com/v1/oauth/token', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      headers: {
+        Authorization: `Basic ${btoa(STRIPE_SECRET_KEY + ':')}`,
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
       body: new URLSearchParams({
         grant_type: 'authorization_code',
         code,
-        client_id: STRIPE_CLIENT_ID,
       }),
     });
 
@@ -36,8 +45,8 @@ serve(async (req) => {
 
     const tokens = await tokenResponse.json();
 
-    // Store tokens in Secret Store is handled by the UI via Stripe SDK
-    // The Edge Function returns the account info for the UI to complete setup
+    // Persist tokens in oauth_tokens table for per-account API access
+    await storeOAuthTokens(auth.supabase, auth.stripeAccountId, tokens);
 
     // Create or update the business_context record for this account
     await auth.supabase
@@ -64,6 +73,9 @@ serve(async (req) => {
     );
   } catch (error) {
     if (error instanceof AuthError) {
+      return errorResponse(error.code, error.message, requestId, error.status);
+    }
+    if (error instanceof TokenError) {
       return errorResponse(error.code, error.message, requestId, error.status);
     }
     console.error('Auth callback error:', requestId, error);
