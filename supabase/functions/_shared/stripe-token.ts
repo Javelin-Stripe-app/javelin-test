@@ -4,7 +4,6 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
 const STRIPE_SECRET_KEY = Deno.env.get('STRIPE_SECRET_KEY') || '';
-const DEV_MODE = Deno.env.get('DEV_MODE') === 'true';
 const TOKEN_REFRESH_BUFFER_MS = 5 * 60 * 1000; // Refresh 5 minutes before expiry
 
 export class TokenError extends Error {
@@ -55,15 +54,10 @@ export async function getStripeAccessToken(
     .single();
 
   if (error || !tokenRow) {
-    // Fall back to env var ONLY in dev mode — in production, the OAuth token
-    // must exist or the user needs to re-authorize. Without this guard, the
-    // STRIPE_SECRET_KEY (platform key) fetches data from the wrong account.
-    if (DEV_MODE && STRIPE_SECRET_KEY) {
-      console.warn(
-        `[DEV] No OAuth token for ${stripeAccountId}, falling back to STRIPE_SECRET_KEY env var`,
-      );
-      return STRIPE_SECRET_KEY;
-    }
+    // NEVER fall back to STRIPE_SECRET_KEY here. That key belongs to the
+    // platform (app developer) account, not the connected account. Using it
+    // would fetch data from the wrong Stripe account. The user must complete
+    // the OAuth flow so a per-account token is stored.
     throw new TokenError(
       `No OAuth token found for account ${stripeAccountId}. User must re-authorize the app.`,
       'token_not_found',
