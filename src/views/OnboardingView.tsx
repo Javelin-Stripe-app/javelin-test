@@ -8,7 +8,7 @@ import {
   Icon,
 } from '@stripe/ui-extension-sdk/ui';
 import type { ExtensionContextValue } from '@stripe/ui-extension-sdk/context';
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { apiClient, initApiClient } from '../lib/api-client';
 import { useStripeSync } from '../hooks/useStripeSync';
 
@@ -30,10 +30,16 @@ const OnboardingView = ({ userContext, oauthContext }: ExtensionContextValue) =>
 
   const [state, setState] = useState<OnboardingState>('auth');
   const [errorMessage, setErrorMessage] = useState<string>('');
-  const [authCallbackSucceeded, setAuthCallbackSucceeded] = useState(false);
   const { syncAll, syncing, progress, error: syncError } = useStripeSync();
+  const hasRun = useRef(false);
 
   const handleSetup = useCallback(async () => {
+    // Prevent double-execution from React strict mode or dep changes
+    if (hasRun.current) return;
+    hasRun.current = true;
+
+    let authOk = false;
+
     // Step 1: Try auth-callback if we have an OAuth code
     if (oauthContext?.code && !oauthContext?.error) {
       try {
@@ -45,45 +51,45 @@ const OnboardingView = ({ userContext, oauthContext }: ExtensionContextValue) =>
             verifier: oauthContext.verifier || '',
           },
         });
-        setAuthCallbackSucceeded(true);
+        authOk = true;
       } catch {
-        // Auth callback failed — continue with SDK sync anyway
         console.warn('auth-callback failed, proceeding with SDK-based sync');
       }
     }
 
     // Step 2: Always run SDK-based sync
     setState('syncing');
-    try {
-      await syncAll();
+    const anyDataSynced = await syncAll();
 
-      // Step 3: If auth-callback succeeded, also trigger backend sync for completeness
-      if (authCallbackSucceeded) {
-        try {
-          await apiClient('/sync-trigger', { method: 'POST', body: {} });
-        } catch {
-          // Non-critical — SDK sync already populated the cache
-        }
-      }
-
-      setState('success');
-    } catch {
+    if (!anyDataSynced) {
       setState('error');
       setErrorMessage('Failed to sync your Stripe data. Please try again.');
+      hasRun.current = false; // Allow retry
+      return;
     }
-  }, [oauthContext, syncAll, authCallbackSucceeded]);
+
+    // Step 3: If auth-callback succeeded, also trigger backend sync for completeness
+    if (authOk) {
+      try {
+        await apiClient('/sync-trigger', { method: 'POST', body: {} });
+      } catch {
+        // Non-critical — SDK sync already populated the cache
+      }
+    }
+
+    setState('success');
+  }, [oauthContext, syncAll]);
 
   useEffect(() => {
     handleSetup();
   }, [handleSetup]);
 
-  // Update state if sync error occurs
-  useEffect(() => {
-    if (syncError) {
-      setState('error');
-      setErrorMessage(syncError);
-    }
-  }, [syncError]);
+  const handleRetry = useCallback(() => {
+    hasRun.current = false;
+    setErrorMessage('');
+    setState('auth');
+    handleSetup();
+  }, [handleSetup]);
 
   return (
     <ContextView title="Welcome to Javelin">
@@ -103,9 +109,11 @@ const OnboardingView = ({ userContext, oauthContext }: ExtensionContextValue) =>
                   const idx = Object.keys(OBJECT_TYPE_LABELS).indexOf(type);
                   const isComplete = idx < progress.completed;
                   const isCurrent = type === progress.current;
+                  const isFailed = progress.failed.includes(type as never);
                   return (
                     <Box key={type} css={{ stack: 'x', gap: 'small', alignY: 'center' }}>
-                      {isComplete && <Icon name="check" />}
+                      {isComplete && !isFailed && <Icon name="check" />}
+                      {isComplete && isFailed && <Icon name="warning" />}
                       {isCurrent && <Spinner size="small" />}
                       <Inline css={{ color: isComplete || isCurrent ? 'primary' : 'secondary' }}>
                         {OBJECT_TYPE_LABELS[type]}
@@ -125,6 +133,13 @@ const OnboardingView = ({ userContext, oauthContext }: ExtensionContextValue) =>
               title="Setup complete!"
               description="Javelin is ready. Your data has been synced — you can start asking questions right away."
             />
+            {syncError && (
+              <Banner
+                type="caution"
+                title="Partial sync"
+                description={syncError}
+              />
+            )}
             <Inline css={{ color: 'secondary' }}>
               Open the Javelin drawer from any page in your Stripe Dashboard to get started.
             </Inline>
@@ -134,7 +149,7 @@ const OnboardingView = ({ userContext, oauthContext }: ExtensionContextValue) =>
         {state === 'error' && (
           <>
             <Banner type="critical" title="Setup failed" description={errorMessage} />
-            <Button type="primary" onPress={handleSetup}>
+            <Button type="primary" onPress={handleRetry}>
               Retry
             </Button>
           </>

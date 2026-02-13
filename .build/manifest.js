@@ -2,7 +2,7 @@
 import ChatView from '../src/views/ChatView';import SettingsView from '../src/views/SettingsView';import OnboardingView from '../src/views/OnboardingView';
 
 export * from '@stripe/ui-extension-sdk/version';
-export const BUILD_TIME = '2026-02-13 07:14:17.144806 -0300 -03 m=+13.024168243';
+export const BUILD_TIME = '2026-02-13 09:52:47.528856 -0300 -03 m=+8.814534654';
 
 export { 
   ChatView,	
@@ -79,5 +79,5 @@ export default {
       }
     ]
   },
-  "version": "0.0.4"
+  "version": "0.0.5"
 };
