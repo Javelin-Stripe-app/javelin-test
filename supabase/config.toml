@@ -394,6 +394,8 @@ verify_jwt = false
 verify_jwt = false
 [functions.sync-backfill]
 verify_jwt = false
+[functions.sync-data]
+verify_jwt = false
 [functions.sync-status]
 verify_jwt = false
 [functions.sync-trigger]

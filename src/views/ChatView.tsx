@@ -6,6 +6,7 @@ import ChatInput from '../components/ChatInput';
 import WelcomePrompt from '../components/WelcomePrompt';
 import ConversationList from '../components/ConversationList';
 import { apiClient, initApiClient } from '../lib/api-client';
+import { useStripeSync } from '../hooks/useStripeSync';
 
 interface Message {
   id: string;
@@ -25,7 +26,7 @@ interface Conversation {
   updatedAt: string;
 }
 
-type ViewState = 'loading' | 'empty' | 'chat' | 'error';
+type ViewState = 'loading' | 'empty' | 'needs-sync' | 'chat' | 'error';
 
 const ChatView = ({ userContext, environment: _environment }: ExtensionContextValue) => {
   // Initialize API client with Stripe context for signature verification
@@ -42,6 +43,17 @@ const ChatView = ({ userContext, environment: _environment }: ExtensionContextVa
   const [welcomeInsights, setWelcomeInsights] = useState<Array<{ id: string; content: string }>>([]);
   const [showConversationList, setShowConversationList] = useState(false);
 
+  const { syncAll, syncing, progress, error: syncError } = useStripeSync();
+
+  const handleSyncNow = useCallback(async () => {
+    await syncAll();
+    // After sync completes, reload welcome insights and switch to empty state
+    if (!syncError) {
+      loadWelcomeInsights();
+      setViewState('empty');
+    }
+  }, [syncAll, syncError]);
+
   const loadConversations = useCallback(async () => {
     try {
       const response = await apiClient<{ conversations: Conversation[] }>('/chat-conversations');
@@ -50,17 +62,17 @@ const ChatView = ({ userContext, environment: _environment }: ExtensionContextVa
 
       if (convos.length === 0) {
         // First time user — load welcome insights
-        loadWelcomeInsights();
-        setViewState('empty');
+        const hasData = await loadWelcomeInsights();
+        setViewState(hasData ? 'empty' : 'needs-sync');
       } else {
         // Load the most recent conversation
         await loadConversation(convos[0].id);
         setViewState('chat');
       }
     } catch {
-      // If conversations fail to load, show empty state (could be first time)
-      setViewState('empty');
-      loadWelcomeInsights();
+      // If conversations fail to load, check if we need sync
+      const hasData = await loadWelcomeInsights();
+      setViewState(hasData ? 'empty' : 'needs-sync');
     }
   }, []);
 
@@ -69,14 +81,16 @@ const ChatView = ({ userContext, environment: _environment }: ExtensionContextVa
     loadConversations();
   }, [loadConversations]);
 
-  const loadWelcomeInsights = async () => {
+  const loadWelcomeInsights = async (): Promise<boolean> => {
     try {
       const response = await apiClient<{ insights: Array<{ id: string; content: string }> }>(
         '/insights-welcome',
       );
-      setWelcomeInsights(response.data?.insights || []);
+      const insights = response.data?.insights || [];
+      setWelcomeInsights(insights);
+      return insights.length > 0;
     } catch {
-      // Non-critical — just show empty welcome
+      return false;
     }
   };
 
@@ -160,7 +174,6 @@ const ChatView = ({ userContext, environment: _environment }: ExtensionContextVa
 
         if (code === 'auth_refresh_failed') {
           setError('Your session has expired. Please re-authorize Javelin.');
-          // In a full implementation, this would switch to SignInView
         } else if (code === 'llm_unavailable') {
           setError('AI service is temporarily unavailable. Please try again in a moment.');
         } else {
@@ -234,6 +247,15 @@ const ChatView = ({ userContext, environment: _environment }: ExtensionContextVa
           />
         )}
 
+        {/* Sync error banner */}
+        {syncError && (
+          <Banner
+            type="caution"
+            title="Sync issue"
+            description={syncError}
+          />
+        )}
+
         {/* Conversation list panel */}
         {showConversationList && (
           <ConversationList
@@ -246,20 +268,46 @@ const ChatView = ({ userContext, environment: _environment }: ExtensionContextVa
 
         {/* Main content area */}
         {!showConversationList && <Box css={{ stack: 'y', overflow: 'auto' }}>
-          {viewState === 'empty' && messages.length === 0 ? (
+          {/* Needs sync state */}
+          {viewState === 'needs-sync' && !syncing && (
+            <Box css={{ padding: 'medium', stack: 'y', gap: 'medium', alignX: 'center' }}>
+              <Inline css={{ font: 'heading' }}>Sync your Stripe data</Inline>
+              <Inline css={{ color: 'secondary' }}>
+                Javelin needs to sync your Stripe data before it can generate insights. This usually takes less than a minute.
+              </Inline>
+              <Button type="primary" onPress={handleSyncNow}>
+                Sync now
+              </Button>
+            </Box>
+          )}
+
+          {/* Syncing progress */}
+          {syncing && (
+            <Box css={{ padding: 'medium', stack: 'y', gap: 'small', alignX: 'center' }}>
+              <Spinner />
+              <Inline css={{ color: 'secondary' }}>
+                Syncing your data... ({progress.completed}/{progress.total})
+              </Inline>
+            </Box>
+          )}
+
+          {/* Normal empty/chat states */}
+          {viewState === 'empty' && !syncing && messages.length === 0 ? (
             <WelcomePrompt onSelectPrompt={sendMessage} insights={welcomeInsights} />
-          ) : (
+          ) : viewState === 'chat' || messages.length > 0 ? (
             <ChatThread
               messages={messages}
               isThinking={isThinking}
               thinkingStartedAt={thinkingStartedAt}
               onClarificationSelect={handleClarificationSelect}
             />
-          )}
+          ) : null}
         </Box>}
 
         {/* Chat input */}
-        {!showConversationList && <ChatInput onSend={sendMessage} disabled={isThinking} />}
+        {!showConversationList && viewState !== 'needs-sync' && !syncing && (
+          <ChatInput onSend={sendMessage} disabled={isThinking} />
+        )}
       </Box>
     </ContextView>
   );

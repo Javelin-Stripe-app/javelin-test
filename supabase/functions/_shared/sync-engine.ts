@@ -36,7 +36,7 @@ interface SyncResult {
  * Extract indexed columns from a Stripe object for the cache table.
  * Each object type has specific columns that are indexed for query performance.
  */
-function extractIndexedColumns(
+export function extractIndexedColumns(
   stripeObject: Record<string, unknown>,
   objectType: string,
   stripeAccountId: string,
