@@ -6,7 +6,12 @@ import { createLLMProvider, LLMError } from '../_shared/llm-provider.ts';
 import { sanitizeForLLM, restorePII } from '../_shared/pii-sanitizer.ts';
 import { buildSystemPrompt, buildUserPrompt } from '../_shared/system-prompt.ts';
 import { generateInsights } from '../_shared/insight-engine.ts';
+import { syncObjectType } from '../_shared/sync-engine.ts';
+import { getStripeAccessToken } from '../_shared/stripe-token.ts';
 import { z } from 'https://esm.sh/zod@3';
+
+// Re-sync cached data if older than 1 hour
+const SYNC_STALENESS_MS = 60 * 60 * 1000;
 
 const chatMessageRequestSchema = z.object({
   conversationId: z.string().uuid().nullish(),
@@ -47,6 +52,47 @@ function detectRelevantMetrics(question: string): string[] {
   return Array.from(tables);
 }
 
+/**
+ * Check each relevant cache table for freshness. If data is missing or stale
+ * (older than SYNC_STALENESS_MS), sync those tables from Stripe before querying.
+ */
+async function ensureFreshData(
+  supabase: ReturnType<typeof import('https://esm.sh/@supabase/supabase-js@2').createClient>,
+  stripeAccountId: string,
+  relevantTables: string[],
+): Promise<void> {
+  const tablesToSync: string[] = [];
+
+  await Promise.all(relevantTables.map(async (table) => {
+    const { data } = await supabase
+      .from(`cached_${table}`)
+      .select('synced_at')
+      .eq('stripe_account_id', stripeAccountId)
+      .order('synced_at', { ascending: false })
+      .limit(1);
+
+    const isEmpty = !data || data.length === 0;
+    const isStale = !isEmpty &&
+      (Date.now() - new Date(data[0].synced_at).getTime()) > SYNC_STALENESS_MS;
+
+    if (isEmpty || isStale) {
+      tablesToSync.push(table);
+    }
+  }));
+
+  if (tablesToSync.length === 0) return;
+
+  try {
+    const token = await getStripeAccessToken(supabase, stripeAccountId);
+    for (const table of tablesToSync) {
+      await syncObjectType(supabase, token, stripeAccountId, table);
+    }
+  } catch (err) {
+    // Non-fatal: continue with stale/empty data
+    console.error('Auto-sync failed:', err instanceof Error ? err.message : err);
+  }
+}
+
 async function fetchMetricsData(
   supabase: ReturnType<typeof import('https://esm.sh/@supabase/supabase-js@2').createClient>,
   stripeAccountId: string,
@@ -85,12 +131,30 @@ async function fetchMetricsData(
         byStatus: statusCounts,
       };
     } else if (table === 'customers') {
-      const { count } = await supabase
+      const { data: customers, count } = await supabase
         .from(tableName)
-        .select('id', { count: 'exact', head: true })
-        .eq('stripe_account_id', stripeAccountId);
+        .select('id, name, email, created, synced_at', { count: 'exact' })
+        .eq('stripe_account_id', stripeAccountId)
+        .order('created', { ascending: false })
+        .limit(50);
 
-      metrics.customers = { total: count || 0 };
+      metrics.customers = {
+        total: count || 0,
+        list: (customers || []).map((c: { id: string; name: string | null; email: string | null; created: string | null }) => ({
+          id: c.id,
+          name: c.name || '(no name)',
+          email: c.email || '(no email)',
+          created: c.created,
+        })),
+      };
+
+      // Track freshness from customer data
+      for (const c of customers || []) {
+        const row = c as { synced_at?: string };
+        if (row.synced_at && (!latestSyncedAt || row.synced_at > latestSyncedAt)) {
+          latestSyncedAt = row.synced_at;
+        }
+      }
     } else if (table === 'invoices') {
       const { data: recentInvoices } = await supabase
         .from(tableName)
@@ -290,8 +354,9 @@ serve(async (req) => {
 
     const businessContext = businessContextRow?.profile || {};
 
-    // Detect relevant metrics and fetch data
+    // Detect relevant metrics, ensure fresh data, then fetch
     const relevantTables = detectRelevantMetrics(content);
+    await ensureFreshData(auth.supabase, auth.stripeAccountId, relevantTables);
     const { metrics, syncedAt } = await fetchMetricsData(
       auth.supabase,
       auth.stripeAccountId,

@@ -4,6 +4,52 @@ import { authenticateRequest, AuthError } from '../_shared/auth.ts';
 import { jsonResponse, errorResponse } from '../_shared/response.ts';
 import { createLLMProvider } from '../_shared/llm-provider.ts';
 import type { ChatMessage } from '../_shared/llm-provider.ts';
+import { syncObjectType } from '../_shared/sync-engine.ts';
+import { getStripeAccessToken } from '../_shared/stripe-token.ts';
+
+// Re-sync cached data if older than 1 hour
+const SYNC_STALENESS_MS = 60 * 60 * 1000;
+
+const WELCOME_TABLES = ['subscriptions', 'invoices', 'customers'] as const;
+
+/**
+ * Check cache tables for freshness. If data is missing or stale,
+ * sync those tables from Stripe before generating insights.
+ */
+async function ensureFreshData(
+  supabase: ReturnType<typeof import('https://esm.sh/@supabase/supabase-js@2').createClient>,
+  stripeAccountId: string,
+): Promise<void> {
+  const tablesToSync: string[] = [];
+
+  await Promise.all(WELCOME_TABLES.map(async (table) => {
+    const { data } = await supabase
+      .from(`cached_${table}`)
+      .select('synced_at')
+      .eq('stripe_account_id', stripeAccountId)
+      .order('synced_at', { ascending: false })
+      .limit(1);
+
+    const isEmpty = !data || data.length === 0;
+    const isStale = !isEmpty &&
+      (Date.now() - new Date(data[0].synced_at).getTime()) > SYNC_STALENESS_MS;
+
+    if (isEmpty || isStale) {
+      tablesToSync.push(table);
+    }
+  }));
+
+  if (tablesToSync.length === 0) return;
+
+  try {
+    const token = await getStripeAccessToken(supabase, stripeAccountId);
+    for (const table of tablesToSync) {
+      await syncObjectType(supabase, token, stripeAccountId, table);
+    }
+  } catch (err) {
+    console.error('Auto-sync failed:', err instanceof Error ? err.message : err);
+  }
+}
 
 serve(async (req) => {
   const corsResponse = handleCors(req);
@@ -17,6 +63,9 @@ serve(async (req) => {
 
   try {
     const auth = await authenticateRequest(req);
+
+    // Ensure cached data is fresh before generating insights
+    await ensureFreshData(auth.supabase, auth.stripeAccountId);
 
     // Fetch recent cached data to generate insights from
     const [

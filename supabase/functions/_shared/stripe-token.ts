@@ -4,6 +4,7 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
 const STRIPE_SECRET_KEY = Deno.env.get('STRIPE_SECRET_KEY') || '';
+const DEV_MODE = Deno.env.get('DEV_MODE') === 'true';
 const TOKEN_REFRESH_BUFFER_MS = 5 * 60 * 1000; // Refresh 5 minutes before expiry
 
 export class TokenError extends Error {
@@ -54,10 +55,12 @@ export async function getStripeAccessToken(
     .single();
 
   if (error || !tokenRow) {
-    // No token stored — fall back to env var for dev
-    if (STRIPE_SECRET_KEY) {
+    // Fall back to env var ONLY in dev mode — in production, the OAuth token
+    // must exist or the user needs to re-authorize. Without this guard, the
+    // STRIPE_SECRET_KEY (platform key) fetches data from the wrong account.
+    if (DEV_MODE && STRIPE_SECRET_KEY) {
       console.warn(
-        `No OAuth token for ${stripeAccountId}, falling back to STRIPE_SECRET_KEY env var`,
+        `[DEV] No OAuth token for ${stripeAccountId}, falling back to STRIPE_SECRET_KEY env var`,
       );
       return STRIPE_SECRET_KEY;
     }

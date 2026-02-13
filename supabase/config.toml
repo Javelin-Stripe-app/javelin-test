@@ -370,7 +370,35 @@ deno_version = 2
 
 # All Edge Functions use Stripe App signature verification, not Supabase JWT.
 # Disable default JWT check so the gateway forwards requests to function code.
-[functions]
+[functions.account-data]
+verify_jwt = false
+[functions.auth-callback]
+verify_jwt = false
+[functions.auth-refresh]
+verify_jwt = false
+[functions.benchmarking-compare]
+verify_jwt = false
+[functions.chat-conversation-detail]
+verify_jwt = false
+[functions.chat-conversations]
+verify_jwt = false
+[functions.chat-message]
+verify_jwt = false
+[functions.data-lifecycle]
+verify_jwt = false
+[functions.insights-feedback]
+verify_jwt = false
+[functions.insights-welcome]
+verify_jwt = false
+[functions.metrics]
+verify_jwt = false
+[functions.sync-backfill]
+verify_jwt = false
+[functions.sync-status]
+verify_jwt = false
+[functions.sync-trigger]
+verify_jwt = false
+[functions.sync-worker]
 verify_jwt = false
 
 [analytics]
