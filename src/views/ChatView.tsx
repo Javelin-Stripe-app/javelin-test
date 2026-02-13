@@ -7,6 +7,7 @@ import WelcomePrompt from '../components/WelcomePrompt';
 import ConversationList from '../components/ConversationList';
 import { apiClient, initApiClient } from '../lib/api-client';
 import { useStripeSync } from '../hooks/useStripeSync';
+import { useAuthStatus } from '../hooks/useAuthStatus';
 
 interface Message {
   id: string;
@@ -27,6 +28,7 @@ interface Conversation {
 }
 
 type ViewState = 'loading' | 'empty' | 'chat' | 'error';
+type SyncMethod = 'backend' | 'app' | null;
 
 const ChatView = ({ userContext, environment: _environment }: ExtensionContextValue) => {
   // Initialize API client with Stripe context for signature verification
@@ -43,42 +45,58 @@ const ChatView = ({ userContext, environment: _environment }: ExtensionContextVa
   const [welcomeInsights, setWelcomeInsights] = useState<Array<{ id: string; content: string }>>([]);
   const [showConversationList, setShowConversationList] = useState(false);
   const [syncComplete, setSyncComplete] = useState(false);
+  const [syncMethod, setSyncMethod] = useState<SyncMethod>(null);
 
   const { syncAll, syncing, progress, error: syncError } = useStripeSync();
+  const { checkAuth } = useAuthStatus();
   const syncChecked = useRef(false);
 
-  // Always check for cached data on mount and auto-sync if empty
-  const checkAndSync = useCallback(async () => {
+  const loadWelcomeInsights = async (): Promise<boolean> => {
+    try {
+      const response = await apiClient<{ insights: Array<{ id: string; content: string }> }>(
+        '/insights-welcome',
+      );
+      const insights = response.data?.insights || [];
+      setWelcomeInsights(insights);
+      return insights.length > 0;
+    } catch {
+      return false;
+    }
+  };
+
+  // Auth-aware sync: check token health, choose optimal sync path
+  const authAwareSync = useCallback(async () => {
     if (syncChecked.current) return;
     syncChecked.current = true;
 
-    try {
-      const response = await apiClient<{
-        insights: Array<{ id: string; content: string }>;
-        message?: string;
-      }>('/insights-welcome');
+    const status = await checkAuth();
 
-      const insights = response.data?.insights || [];
-      setWelcomeInsights(insights);
-
-      if (insights.length === 0) {
-        // No cached data — auto-trigger SDK sync
+    if (status.state === 'healthy') {
+      // Prefer backend sync via /sync-trigger (paginated, server-side)
+      setSyncMethod('backend');
+      try {
+        await apiClient('/sync-trigger', { method: 'POST' });
+        await loadWelcomeInsights();
+        setSyncComplete(true);
+      } catch {
+        // Backend sync failed — fall back to SDK sync
+        setSyncMethod('app');
         const ok = await syncAll();
         setSyncComplete(true);
         if (ok) {
-          // Reload insights now that data exists
           await loadWelcomeInsights();
         }
       }
-    } catch {
-      // insights-welcome failed — try syncing anyway
+    } else {
+      // No token (missing/expired) or transient error — SDK sync
+      setSyncMethod('app');
       const ok = await syncAll();
       setSyncComplete(true);
       if (ok) {
         await loadWelcomeInsights();
       }
     }
-  }, [syncAll]);
+  }, [checkAuth, syncAll]);
 
   const loadConversations = useCallback(async () => {
     try {
@@ -98,24 +116,11 @@ const ChatView = ({ userContext, environment: _environment }: ExtensionContextVa
     }
   }, []);
 
-  // On mount: load conversations AND check/sync data in parallel
+  // On mount: load conversations AND auth-aware sync in parallel
   useEffect(() => {
     loadConversations();
-    checkAndSync();
-  }, [loadConversations, checkAndSync]);
-
-  const loadWelcomeInsights = async (): Promise<boolean> => {
-    try {
-      const response = await apiClient<{ insights: Array<{ id: string; content: string }> }>(
-        '/insights-welcome',
-      );
-      const insights = response.data?.insights || [];
-      setWelcomeInsights(insights);
-      return insights.length > 0;
-    } catch {
-      return false;
-    }
-  };
+    authAwareSync();
+  }, [loadConversations, authAwareSync]);
 
   const loadConversation = async (conversationId: string) => {
     try {
@@ -147,6 +152,7 @@ const ChatView = ({ userContext, environment: _environment }: ExtensionContextVa
   const handleManualSync = useCallback(async () => {
     syncChecked.current = false;
     setSyncComplete(false);
+    setSyncMethod('app');
     const ok = await syncAll();
     setSyncComplete(true);
     if (ok) {
@@ -253,6 +259,8 @@ const ChatView = ({ userContext, environment: _environment }: ExtensionContextVa
     );
   }
 
+  const syncLabel = syncMethod === 'backend' ? 'Syncing via backend...' : 'Syncing via app...';
+
   return (
     <ContextView
       title="Javelin"
@@ -285,8 +293,16 @@ const ChatView = ({ userContext, environment: _environment }: ExtensionContextVa
           <Box css={{ padding: 'small', backgroundColor: 'container', stack: 'x', gap: 'small', alignY: 'center' }}>
             <Spinner size="small" />
             <Inline css={{ color: 'secondary' }}>
-              Syncing data... ({progress.completed}/{progress.total})
+              {syncLabel} ({progress.completed}/{progress.total})
             </Inline>
+          </Box>
+        )}
+
+        {/* Backend sync in progress (no granular progress) */}
+        {syncMethod === 'backend' && !syncComplete && !syncing && (
+          <Box css={{ padding: 'small', backgroundColor: 'container', stack: 'x', gap: 'small', alignY: 'center' }}>
+            <Spinner size="small" />
+            <Inline css={{ color: 'secondary' }}>Syncing via backend...</Inline>
           </Box>
         )}
 
