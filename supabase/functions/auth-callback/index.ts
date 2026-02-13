@@ -16,8 +16,8 @@ serve(async (req) => {
     const auth = await authenticateRequest(req);
     const { code, state, verifier } = auth.body as { code?: string; state?: string; verifier?: string };
 
-    if (!code || !state) {
-      return errorResponse('invalid_request', 'Missing code or state parameter', requestId, 400);
+    if (!code) {
+      return errorResponse('invalid_request', 'Missing authorization code', requestId, 400);
     }
 
     if (!STRIPE_SECRET_KEY) {
@@ -26,20 +26,32 @@ serve(async (req) => {
 
     // Exchange authorization code for tokens via Stripe Apps OAuth
     // Uses api.stripe.com (NOT connect.stripe.com) with Basic auth
+    // PKCE: must include code_verifier from oauthContext.verifier
+    const exchangeParams: Record<string, string> = {
+      grant_type: 'authorization_code',
+      code,
+    };
+    if (verifier) {
+      exchangeParams.code_verifier = verifier;
+    }
+
     const tokenResponse = await fetch('https://api.stripe.com/v1/oauth/token', {
       method: 'POST',
       headers: {
         Authorization: `Basic ${btoa(STRIPE_SECRET_KEY + ':')}`,
         'Content-Type': 'application/x-www-form-urlencoded',
       },
-      body: new URLSearchParams({
-        grant_type: 'authorization_code',
-        code,
-      }),
+      body: new URLSearchParams(exchangeParams),
     });
 
     if (!tokenResponse.ok) {
       const err = await tokenResponse.json();
+      console.error('OAuth token exchange failed:', requestId, {
+        status: tokenResponse.status,
+        error: err.error,
+        description: err.error_description,
+        hasVerifier: !!verifier,
+      });
       return errorResponse('oauth_exchange_failed', err.error_description || 'Token exchange failed', requestId, 400);
     }
 
