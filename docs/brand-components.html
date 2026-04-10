@@ -1,0 +1,1563 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Javelin Brand Components</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --indigo: #4F46E5;
+      --deep: #3730A3;
+      --light: #C7D2FE;
+      --green: #10B981;
+      --amber: #F59E0B;
+      --n900: #111827;
+      --n100: #F3F4F6;
+      --white: #FFFFFF;
+      --n400: #9CA3AF;
+      --n200: #E5E7EB;
+      --n600: #4B5563;
+      /* Stripe UI simulation colors */
+      --stripe-bg: #F6F8FA;
+      --stripe-border: #E0E6EA;
+      --stripe-primary: #5469D4;
+      --stripe-text: #1A1A2E;
+      --stripe-secondary: #6B7280;
+      --stripe-success: #0E7A5E;
+      --stripe-success-bg: #ECFDF5;
+      --stripe-warning: #B45309;
+      --stripe-warning-bg: #FFFBEB;
+      --stripe-critical: #B91C1C;
+      --stripe-critical-bg: #FEF2F2;
+      --stripe-info-bg: #EFF6FF;
+      --stripe-info: #1D4ED8;
+      --stripe-container: #F9FAFB;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Inter', system-ui, sans-serif;
+      background: var(--white);
+      color: var(--n900);
+      line-height: 1.6;
+      font-size: 16px;
+    }
+
+    /* ─── NAV ─── */
+    nav {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: rgba(255,255,255,0.95);
+      backdrop-filter: blur(8px);
+      border-bottom: 1px solid var(--n200);
+      padding: 0 48px;
+    }
+    nav ul {
+      display: flex;
+      gap: 4px;
+      list-style: none;
+      overflow-x: auto;
+      padding: 12px 0;
+    }
+    nav a {
+      display: block;
+      padding: 6px 12px;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--n600);
+      text-decoration: none;
+      border-radius: 6px;
+      white-space: nowrap;
+      transition: background 0.15s, color 0.15s;
+    }
+    nav a:hover { background: var(--n100); color: var(--n900); }
+
+    /* ─── HERO ─── */
+    #hero {
+      background: var(--deep);
+      max-width: 100%;
+      padding: 80px 48px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .hero-inner {
+      max-width: 960px;
+      width: 100%;
+    }
+    .hero-label {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--light);
+      margin-bottom: 16px;
+      opacity: 0.7;
+    }
+    .hero-title {
+      font-size: 48px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      color: var(--white);
+      line-height: 1.1;
+      margin-bottom: 16px;
+    }
+    .hero-sub {
+      font-size: 18px;
+      font-weight: 400;
+      color: var(--light);
+      max-width: 560px;
+      line-height: 1.5;
+      margin-bottom: 24px;
+    }
+    .hero-pills {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .hero-pill {
+      display: inline-block;
+      padding: 4px 12px;
+      background: rgba(199,210,254,0.15);
+      border: 1px solid rgba(199,210,254,0.3);
+      border-radius: 100px;
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--light);
+    }
+
+    /* ─── SECTIONS ─── */
+    section {
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 72px 48px;
+      border-bottom: 1px solid var(--n200);
+    }
+    section:last-of-type { border-bottom: none; }
+
+    h2 {
+      font-size: 28px;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+      margin-bottom: 8px;
+    }
+    .section-desc {
+      color: var(--n600);
+      margin-bottom: 40px;
+      max-width: 600px;
+    }
+    h3 { font-size: 15px; font-weight: 600; margin-bottom: 4px; }
+    p  { color: var(--n600); line-height: 1.65; }
+
+    .label {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--n400);
+      margin-bottom: 12px;
+    }
+
+    /* ─── COMPONENT BLOCK ─── */
+    .component-block {
+      margin-bottom: 56px;
+    }
+    .component-block:last-child { margin-bottom: 0; }
+
+    .component-header {
+      display: flex;
+      align-items: baseline;
+      gap: 12px;
+      margin-bottom: 6px;
+    }
+    .component-name {
+      font-size: 20px;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+      font-family: 'JetBrains Mono', monospace;
+      color: var(--indigo);
+    }
+    .component-tag {
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      padding: 2px 8px;
+      border-radius: 4px;
+      background: var(--n100);
+      color: var(--n600);
+    }
+    .component-desc {
+      color: var(--n600);
+      font-size: 14px;
+      margin-bottom: 20px;
+      max-width: 540px;
+    }
+
+    .component-layout {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+      align-items: start;
+    }
+    @media (max-width: 720px) {
+      .component-layout { grid-template-columns: 1fr; }
+    }
+
+    /* ─── STRIPE APP SIMULATOR ─── */
+    .stripe-app-frame {
+      background: var(--stripe-bg);
+      border: 1px solid var(--stripe-border);
+      border-radius: 12px;
+      overflow: hidden;
+      font-family: 'Inter', system-ui, sans-serif;
+      font-size: 14px;
+    }
+    .stripe-app-titlebar {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 16px;
+      border-bottom: 1px solid var(--stripe-border);
+      background: var(--white);
+    }
+    .stripe-app-icon {
+      width: 20px;
+      height: 20px;
+      border-radius: 4px;
+      background: linear-gradient(135deg, var(--indigo), var(--deep));
+      flex-shrink: 0;
+    }
+    .stripe-app-title {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--stripe-text);
+    }
+    .stripe-app-body {
+      padding: 0;
+    }
+
+    /* ─── STRIPE UI SIMULATION ─── */
+
+    /* Box simulation */
+    .s-box {
+      display: flex;
+      flex-direction: column;
+    }
+    .s-box.x { flex-direction: row; align-items: center; }
+    .s-box.gap-xxsmall { gap: 2px; }
+    .s-box.gap-xsmall { gap: 4px; }
+    .s-box.gap-small { gap: 8px; }
+    .s-box.gap-medium { gap: 16px; }
+    .s-box.gap-large { gap: 24px; }
+    .s-box.p-small { padding: 8px; }
+    .s-box.p-medium { padding: 16px; }
+    .s-box.p-large { padding: 24px; }
+    .s-box.bg-container { background: var(--stripe-container); border-radius: 8px; }
+    .s-box.space-between { justify-content: space-between; }
+    .s-box.wrap { flex-wrap: wrap; }
+    .s-box.align-center { align-items: center; }
+    .s-box.align-x-center { align-items: center; }
+    .s-box.fill { width: 100%; }
+    .s-box.mb-medium { margin-bottom: 16px; }
+
+    /* Inline simulation */
+    .s-inline { display: inline; }
+    .s-inline.heading { font-size: 16px; font-weight: 600; color: var(--stripe-text); line-height: 1.3; }
+    .s-inline.subheading { font-size: 14px; font-weight: 600; color: var(--stripe-text); }
+    .s-inline.caption { font-size: 12px; color: var(--stripe-secondary); }
+    .s-inline.secondary { color: var(--stripe-secondary); }
+    .s-inline.semibold { font-weight: 600; }
+    .s-inline.bold { font-weight: 700; color: var(--stripe-text); }
+    .s-inline.primary-color { color: var(--stripe-primary); }
+
+    /* Badge simulation */
+    .s-badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.02em;
+      line-height: 1.6;
+    }
+    .s-badge.positive { background: var(--stripe-success-bg); color: var(--stripe-success); }
+    .s-badge.negative { background: var(--stripe-critical-bg); color: var(--stripe-critical); }
+    .s-badge.warning { background: var(--stripe-warning-bg); color: var(--stripe-warning); }
+    .s-badge.info { background: var(--stripe-info-bg); color: var(--stripe-info); }
+
+    /* Button simulation */
+    .s-button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 6px 14px;
+      border-radius: 6px;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      border: none;
+      white-space: nowrap;
+      line-height: 1;
+    }
+    .s-button.primary { background: var(--stripe-primary); color: var(--white); }
+    .s-button.secondary { background: var(--white); color: var(--stripe-text); border: 1px solid var(--stripe-border); }
+    .s-button.destructive { background: var(--stripe-critical-bg); color: var(--stripe-critical); border: 1px solid #FECACA; }
+    .s-button.small { padding: 4px 10px; font-size: 12px; }
+
+    /* Banner simulation */
+    .s-banner {
+      border-radius: 6px;
+      padding: 10px 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .s-banner.default { background: var(--stripe-info-bg); border: 1px solid #BFDBFE; }
+    .s-banner.critical { background: var(--stripe-critical-bg); border: 1px solid #FECACA; }
+    .s-banner-title { font-size: 13px; font-weight: 600; color: var(--stripe-text); }
+    .s-banner.critical .s-banner-title { color: var(--stripe-critical); }
+    .s-banner-desc { font-size: 12px; color: var(--stripe-secondary); }
+
+    /* Divider simulation */
+    .s-divider {
+      height: 1px;
+      background: var(--stripe-border);
+      margin: 4px 0;
+    }
+
+    /* Spinner simulation */
+    .s-spinner {
+      width: 14px;
+      height: 14px;
+      border: 2px solid var(--stripe-border);
+      border-top-color: var(--stripe-primary);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      flex-shrink: 0;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ─── CODE BLOCK ─── */
+    .code-block {
+      background: #0F172A;
+      border-radius: 10px;
+      overflow: hidden;
+    }
+    .code-toolbar {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 10px 16px;
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+    }
+    .code-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+    }
+    .code-dot.red { background: #FF5F56; }
+    .code-dot.yellow { background: #FFBD2E; }
+    .code-dot.green { background: #27C93F; }
+    .code-file {
+      margin-left: auto;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      color: rgba(255,255,255,0.3);
+    }
+    pre {
+      padding: 20px;
+      overflow-x: auto;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      line-height: 1.7;
+      color: #E2E8F0;
+    }
+    .kw { color: #93C5FD; }
+    .str { color: #86EFAC; }
+    .prop { color: #FCA5A5; }
+    .cmt { color: #64748B; }
+    .type-kw { color: #C084FC; }
+
+    /* ─── TOKEN TABLE ─── */
+    .token-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+    .token-table th {
+      text-align: left;
+      padding: 10px 12px;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--n400);
+      border-bottom: 1px solid var(--n200);
+    }
+    .token-table td {
+      padding: 10px 12px;
+      border-bottom: 1px solid var(--n200);
+      color: var(--n600);
+      vertical-align: top;
+    }
+    .token-table tr:last-child td { border-bottom: none; }
+    .token-table td:first-child { font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--indigo); font-weight: 500; }
+
+    /* ─── STATUS BADGES (page-level) ─── */
+    .status-can { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 700; background: #ECFDF5; color: #065F46; }
+    .status-cannot { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 700; background: #FEF2F2; color: #991B1B; }
+    .status-partial { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 700; background: #FFFBEB; color: #92400E; }
+
+    /* ─── AUDIT TABLE ─── */
+    .audit-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+    .audit-table th {
+      text-align: left;
+      padding: 10px 12px;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--n400);
+      border-bottom: 2px solid var(--n200);
+    }
+    .audit-table td {
+      padding: 12px 12px;
+      border-bottom: 1px solid var(--n200);
+      vertical-align: top;
+    }
+    .audit-table tr:last-child td { border-bottom: none; }
+    .audit-element { font-weight: 600; color: var(--n900); font-size: 13px; }
+    .audit-fallback { font-size: 12px; color: var(--n600); margin-top: 4px; }
+
+    /* ─── CONSTRAINT CALLOUT ─── */
+    .constraint-box {
+      background: #FFF7ED;
+      border: 1px solid #FED7AA;
+      border-radius: 10px;
+      padding: 20px 24px;
+      margin-bottom: 40px;
+    }
+    .constraint-box-title {
+      font-size: 13px;
+      font-weight: 700;
+      color: #92400E;
+      margin-bottom: 8px;
+    }
+    .constraint-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .constraint-list li {
+      font-size: 13px;
+      color: #92400E;
+      padding-left: 16px;
+      position: relative;
+    }
+    .constraint-list li::before {
+      content: '—';
+      position: absolute;
+      left: 0;
+      opacity: 0.5;
+    }
+
+    /* ─── VOICE BOX ─── */
+    .voice-box {
+      background: var(--n100);
+      border-radius: 10px;
+      padding: 20px 24px;
+      margin-top: 12px;
+    }
+    .voice-box-title {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--n400);
+      margin-bottom: 12px;
+    }
+    .voice-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin-bottom: 12px;
+    }
+    .voice-row:last-child { margin-bottom: 0; }
+    .voice-good {
+      background: #ECFDF5;
+      border: 1px solid #A7F3D0;
+      border-radius: 6px;
+      padding: 8px 12px;
+      font-size: 13px;
+      color: #065F46;
+    }
+    .voice-bad {
+      background: #FEF2F2;
+      border: 1px solid #FECACA;
+      border-radius: 6px;
+      padding: 8px 12px;
+      font-size: 13px;
+      color: #991B1B;
+    }
+    .voice-indicator {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      margin-bottom: 4px;
+      opacity: 0.7;
+    }
+
+    /* ─── SUMMARY GRID ─── */
+    .summary-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 16px;
+      margin-bottom: 48px;
+    }
+    .summary-card {
+      padding: 20px;
+      border: 1px solid var(--n200);
+      border-radius: 12px;
+      text-decoration: none;
+      color: inherit;
+      transition: border-color 0.15s, box-shadow 0.15s;
+    }
+    .summary-card:hover {
+      border-color: var(--indigo);
+      box-shadow: 0 0 0 3px rgba(79,70,229,0.08);
+    }
+    .summary-card-name {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--indigo);
+      margin-bottom: 4px;
+    }
+    .summary-card-desc {
+      font-size: 12px;
+      color: var(--n600);
+      line-height: 1.5;
+    }
+
+    /* ─── FULL-WIDTH component sections ─── */
+    .component-section {
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 56px 48px;
+      border-bottom: 1px solid var(--n200);
+    }
+    .component-section:last-of-type { border-bottom: none; }
+
+    /* ─── TWO COLUMN WIDE ─── */
+    .two-col {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+      align-items: start;
+    }
+    @media (max-width: 700px) { .two-col { grid-template-columns: 1fr; } }
+
+    /* variants showcase */
+    .variants-row {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      align-items: flex-start;
+      margin-bottom: 16px;
+    }
+  </style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <ul>
+    <li><a href="#overview">Overview</a></li>
+    <li><a href="#constraints">Constraints</a></li>
+    <li><a href="#JvSectionHeader">JvSectionHeader</a></li>
+    <li><a href="#JvCard">JvCard</a></li>
+    <li><a href="#JvStatusIndicator">JvStatusIndicator</a></li>
+    <li><a href="#JvEmptyState">JvEmptyState</a></li>
+    <li><a href="#JvMetricDisplay">JvMetricDisplay</a></li>
+    <li><a href="#JvActionBar">JvActionBar</a></li>
+    <li><a href="#JvConfirmationPrompt">JvConfirmationPrompt</a></li>
+    <li><a href="#JvFreshnessIndicator">JvFreshnessIndicator</a></li>
+    <li><a href="#JvLoadingState">JvLoadingState</a></li>
+    <li><a href="#JvPromptSuggestions">JvPromptSuggestions</a></li>
+    <li><a href="#tokens">Token Map</a></li>
+  </ul>
+</nav>
+
+<!-- HERO -->
+<section id="hero">
+  <div class="hero-inner">
+    <div class="hero-label">Javelin · Design System</div>
+    <div class="hero-title">Brand Components</div>
+    <div class="hero-sub">
+      A brand-aligned component layer for the Stripe UI Toolkit. Enforces Javelin's voice, spacing rhythm, and semantic state patterns within the hard constraints of the Stripe Apps serialization model.
+    </div>
+    <div class="hero-pills">
+      <span class="hero-pill">10 components</span>
+      <span class="hero-pill">Stripe UI Toolkit only</span>
+      <span class="hero-pill">Design tokens only</span>
+      <span class="hero-pill">React 17</span>
+      <span class="hero-pill">src/components/brand/</span>
+    </div>
+  </div>
+</section>
+
+<!-- OVERVIEW -->
+<section id="overview">
+  <h2>Overview</h2>
+  <p class="section-desc">
+    The <code>Jv</code> prefix (short for Javelin) distinguishes brand-standard components from raw Stripe Toolkit primitives. Each component enforces consistent spacing, token usage, and voice patterns.
+  </p>
+
+  <div class="summary-grid">
+    <a class="summary-card" href="#JvSectionHeader">
+      <div class="summary-card-name">JvSectionHeader</div>
+      <div class="summary-card-desc">Section heading with optional subtitle and action slot</div>
+    </a>
+    <a class="summary-card" href="#JvCard">
+      <div class="summary-card-name">JvCard</div>
+      <div class="summary-card-desc">Content container with consistent padding and background</div>
+    </a>
+    <a class="summary-card" href="#JvStatusIndicator">
+      <div class="summary-card-name">JvStatusIndicator</div>
+      <div class="summary-card-desc">Semantic status badge with optional context label</div>
+    </a>
+    <a class="summary-card" href="#JvEmptyState">
+      <div class="summary-card-name">JvEmptyState</div>
+      <div class="summary-card-desc">Brand-voiced empty states with actions and suggestions</div>
+    </a>
+    <a class="summary-card" href="#JvMetricDisplay">
+      <div class="summary-card-name">JvMetricDisplay</div>
+      <div class="summary-card-desc">Metric value with label, trend badge, and freshness</div>
+    </a>
+    <a class="summary-card" href="#JvActionBar">
+      <div class="summary-card-name">JvActionBar</div>
+      <div class="summary-card-desc">Primary, secondary, and destructive action grouping</div>
+    </a>
+    <a class="summary-card" href="#JvConfirmationPrompt">
+      <div class="summary-card-name">JvConfirmationPrompt</div>
+      <div class="summary-card-desc">Safety confirmation for destructive or high-impact actions</div>
+    </a>
+    <a class="summary-card" href="#JvFreshnessIndicator">
+      <div class="summary-card-name">JvFreshnessIndicator</div>
+      <div class="summary-card-desc">Live vs cached data badge for transparent data currency</div>
+    </a>
+    <a class="summary-card" href="#JvLoadingState">
+      <div class="summary-card-name">JvLoadingState</div>
+      <div class="summary-card-desc">Spinner with progressive messaging and extended-wait banner</div>
+    </a>
+    <a class="summary-card" href="#JvPromptSuggestions">
+      <div class="summary-card-name">JvPromptSuggestions</div>
+      <div class="summary-card-desc">Suggestion button row with optional label header</div>
+    </a>
+  </div>
+
+  <div class="label">Import</div>
+  <div class="code-block">
+    <div class="code-toolbar">
+      <span class="code-dot red"></span>
+      <span class="code-dot yellow"></span>
+      <span class="code-dot green"></span>
+      <span class="code-file">src/components/brand/index.ts</span>
+    </div>
+    <pre><span class="kw">import</span> {
+  JvSectionHeader,
+  JvCard,
+  JvStatusIndicator,
+  JvEmptyState,
+  JvMetricDisplay,
+  JvActionBar,
+  JvConfirmationPrompt,
+  JvFreshnessIndicator,
+  JvLoadingState,
+  JvPromptSuggestions,
+} <span class="kw">from</span> <span class="str">'../components/brand'</span>;</pre>
+  </div>
+</section>
+
+<!-- CONSTRAINTS -->
+<section id="constraints">
+  <h2>Platform Constraints</h2>
+  <p class="section-desc">
+    All components operate within the Stripe Apps serialization model. These are non-negotiable platform limits that determine what is and isn't possible.
+  </p>
+
+  <div class="constraint-box">
+    <div class="constraint-box-title">Non-negotiable Stripe Apps limits</div>
+    <ul class="constraint-list">
+      <li>Only Stripe UI Toolkit components — no raw HTML elements (&lt;div&gt;, &lt;span&gt;, etc.)</li>
+      <li>Only <code>Box</code> and <code>Inline</code> accept the <code>css</code> prop — all other components have preset styles</li>
+      <li>The <code>css</code> prop accepts design tokens only — no hex colors, RGB values, or arbitrary CSS strings</li>
+      <li>No custom fonts, no font-family overrides — Stripe controls all typography rendering</li>
+      <li>No localStorage, indexedDB, DOM manipulation, or ref props — sandboxed iframe with null origin</li>
+      <li>React 17 only — no React 18/19 hooks (useTransition, useDeferredValue, use())</li>
+    </ul>
+  </div>
+
+  <div class="label">Brand constraint audit summary</div>
+  <table class="audit-table">
+    <thead>
+      <tr>
+        <th>Brand Element</th>
+        <th>Status</th>
+        <th>In-product fallback</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><div class="audit-element">Voice &amp; Tone</div></td>
+        <td><span class="status-can">CAN</span></td>
+        <td>Full control — voice is the primary brand lever inside the app</td>
+      </tr>
+      <tr>
+        <td><div class="audit-element">Messaging Framework</div></td>
+        <td><span class="status-can">CAN</span></td>
+        <td>All user-facing strings, labels, and error messages are authored by Javelin</td>
+      </tr>
+      <tr>
+        <td><div class="audit-element">Tagline ("Tell Stripe what to do.")</div></td>
+        <td><span class="status-can">CAN</span></td>
+        <td>Rendered as text in onboarding and welcome state</td>
+      </tr>
+      <tr>
+        <td><div class="audit-element">Brand Archetype (Magician + Sage)</div></td>
+        <td><span class="status-can">CAN</span></td>
+        <td>Expressed through voice, UX patterns, and interaction design</td>
+      </tr>
+      <tr>
+        <td><div class="audit-element">Javelin Indigo (#4F46E5)</div></td>
+        <td><span class="status-cannot">CANNOT</span></td>
+        <td>Use <code>primary</code> semantic token. Reserve exact hex for icon and marketplace images.</td>
+      </tr>
+      <tr>
+        <td><div class="audit-element">Custom fonts (Inter, JetBrains Mono)</div></td>
+        <td><span class="status-cannot">CANNOT</span></td>
+        <td>Use Stripe's font tokens (<code>font: 'heading'</code>, <code>font: 'caption'</code>, <code>font: 'code'</code>)</td>
+      </tr>
+      <tr>
+        <td><div class="audit-element">Signal Green (#10B981)</div></td>
+        <td><span class="status-partial">PARTIAL</span></td>
+        <td>Use <code>success</code> color token and <code>Badge type="positive"</code></td>
+      </tr>
+      <tr>
+        <td><div class="audit-element">Alert Amber (#F59E0B)</div></td>
+        <td><span class="status-partial">PARTIAL</span></td>
+        <td>Use <code>warning</code> color token and <code>Badge type="warning"</code></td>
+      </tr>
+      <tr>
+        <td><div class="audit-element">Spacing rhythm</div></td>
+        <td><span class="status-partial">PARTIAL</span></td>
+        <td>Stripe's 8px base scale is compatible — use token vocabulary defined below</td>
+      </tr>
+      <tr>
+        <td><div class="audit-element">Custom iconography (24x24, 2px stroke)</div></td>
+        <td><span class="status-partial">PARTIAL</span></td>
+        <td>Use Stripe's <code>Icon</code> component. Reserve custom icons for marketplace images.</td>
+      </tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- ─────────────────────────────────────────────── -->
+<!-- JvSectionHeader -->
+<!-- ─────────────────────────────────────────────── -->
+<section id="JvSectionHeader">
+  <h2>JvSectionHeader</h2>
+  <p class="section-desc">
+    Consistent section header with optional subtitle and trailing action. Enforces Javelin's heading treatment and direct voice pattern — short, specific titles that tell users exactly where they are.
+  </p>
+
+  <div class="two-col">
+    <!-- Preview -->
+    <div>
+      <div class="label">Preview</div>
+      <div class="stripe-app-frame">
+        <div class="stripe-app-titlebar">
+          <div class="stripe-app-icon"></div>
+          <div class="stripe-app-title">Javelin</div>
+        </div>
+        <div class="stripe-app-body">
+          <!-- With action -->
+          <div class="s-box p-medium gap-medium">
+            <div class="s-box x space-between align-center mb-medium" style="margin-bottom:0">
+              <div class="s-box gap-xxsmall">
+                <span class="s-inline heading">Recent insights</span>
+              </div>
+              <button class="s-button secondary small">View all</button>
+            </div>
+            <div class="s-divider"></div>
+            <!-- Without action + subtitle -->
+            <div class="s-box gap-xxsmall">
+              <span class="s-inline heading">Your metrics</span>
+              <span class="s-inline caption">Updated just now</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Code -->
+    <div>
+      <div class="label">Usage</div>
+      <div class="code-block">
+        <div class="code-toolbar">
+          <span class="code-dot red"></span><span class="code-dot yellow"></span><span class="code-dot green"></span>
+        </div>
+        <pre><span class="cmt">// With action</span>
+&lt;<span class="prop">JvSectionHeader</span>
+  <span class="prop">title</span>=<span class="str">"Recent insights"</span>
+  <span class="prop">action</span>={
+    &lt;<span class="prop">Button</span> <span class="prop">type</span>=<span class="str">"secondary"</span>
+      <span class="prop">size</span>=<span class="str">"small"</span>
+      <span class="prop">onPress</span>={handleViewAll}&gt;
+      View all
+    &lt;/<span class="prop">Button</span>&gt;
+  }
+/&gt;
+
+<span class="cmt">// With subtitle</span>
+&lt;<span class="prop">JvSectionHeader</span>
+  <span class="prop">title</span>=<span class="str">"Your metrics"</span>
+  <span class="prop">subtitle</span>=<span class="str">"Updated just now"</span>
+/&gt;</pre>
+      </div>
+    </div>
+  </div>
+
+  <div class="voice-box" style="margin-top:20px">
+    <div class="voice-box-title">Brand voice — title copy</div>
+    <div class="voice-row">
+      <div class="voice-good"><div class="voice-indicator">✓ use</div>"Recent insights"<br>"Your metrics"<br>"Conversations"</div>
+      <div class="voice-bad"><div class="voice-indicator">✗ avoid</div>"Overview"<br>"Data &amp; Analytics"<br>"Information"</div>
+    </div>
+  </div>
+</section>
+
+<!-- ─────────────────────────────────────────────── -->
+<!-- JvCard -->
+<!-- ─────────────────────────────────────────────── -->
+<section id="JvCard">
+  <h2>JvCard</h2>
+  <p class="section-desc">
+    Content container with consistent padding, background, and internal spacing. The primary grouping primitive for the Javelin UI — keeps the experience clean and uncluttered.
+  </p>
+
+  <div class="two-col">
+    <div>
+      <div class="label">Preview</div>
+      <div class="stripe-app-frame">
+        <div class="stripe-app-titlebar">
+          <div class="stripe-app-icon"></div>
+          <div class="stripe-app-title">Javelin</div>
+        </div>
+        <div class="stripe-app-body s-box p-medium gap-small">
+          <!-- Default card -->
+          <div class="s-box bg-container p-medium gap-small">
+            <span class="s-inline semibold">MRR this month</span>
+            <span class="s-inline secondary" style="font-size:13px">Your monthly recurring revenue for March 2026</span>
+          </div>
+          <!-- Compact card -->
+          <div class="s-box bg-container p-small gap-xsmall">
+            <span class="s-inline caption">COMPACT VARIANT</span>
+            <span class="s-inline semibold">$5,200</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div>
+      <div class="label">Usage</div>
+      <div class="code-block">
+        <div class="code-toolbar">
+          <span class="code-dot red"></span><span class="code-dot yellow"></span><span class="code-dot green"></span>
+        </div>
+        <pre><span class="cmt">// Default</span>
+&lt;<span class="prop">JvCard</span>&gt;
+  &lt;<span class="prop">Inline</span> <span class="prop">css</span>={{ <span class="prop">fontWeight</span>: <span class="str">'semibold'</span> }}&gt;
+    MRR this month
+  &lt;/<span class="prop">Inline</span>&gt;
+  &lt;<span class="prop">Inline</span> <span class="prop">css</span>={{ <span class="prop">color</span>: <span class="str">'secondary'</span> }}&gt;
+    Your MRR for March 2026
+  &lt;/<span class="prop">Inline</span>&gt;
+&lt;/<span class="prop">JvCard</span>&gt;
+
+<span class="cmt">// Dense context</span>
+&lt;<span class="prop">JvCard</span> <span class="prop">padding</span>=<span class="str">"small"</span>&gt;
+  ...
+&lt;/<span class="prop">JvCard</span>&gt;
+
+<span class="cmt">// Transparent (grouping only)</span>
+&lt;<span class="prop">JvCard</span> <span class="prop">transparent</span>&gt;
+  ...
+&lt;/<span class="prop">JvCard</span>&gt;</pre>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ─────────────────────────────────────────────── -->
+<!-- JvStatusIndicator -->
+<!-- ─────────────────────────────────────────────── -->
+<section id="JvStatusIndicator">
+  <h2>JvStatusIndicator</h2>
+  <p class="section-desc">
+    Semantic status badge that maps business states to Stripe's Badge types. Used for data freshness, metric trends, action states, and system health.
+  </p>
+
+  <div class="two-col">
+    <div>
+      <div class="label">All variants</div>
+      <div class="stripe-app-frame">
+        <div class="stripe-app-titlebar">
+          <div class="stripe-app-icon"></div>
+          <div class="stripe-app-title">Javelin</div>
+        </div>
+        <div class="stripe-app-body s-box p-medium gap-small">
+          <div class="s-box x gap-xsmall align-center">
+            <span class="s-badge positive">MRR up 12%</span>
+            <span class="s-inline caption">vs. last month</span>
+          </div>
+          <div class="s-box x gap-xsmall align-center">
+            <span class="s-badge negative">Churn up 3%</span>
+            <span class="s-inline caption">vs. last month</span>
+          </div>
+          <div class="s-box x gap-xsmall align-center">
+            <span class="s-badge warning">Stale data</span>
+            <span class="s-inline caption">last sync 2h ago</span>
+          </div>
+          <div class="s-box x gap-xsmall align-center">
+            <span class="s-badge info">Cached</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div>
+      <div class="label">Usage</div>
+      <div class="code-block">
+        <div class="code-toolbar">
+          <span class="code-dot red"></span><span class="code-dot yellow"></span><span class="code-dot green"></span>
+        </div>
+        <pre>&lt;<span class="prop">JvStatusIndicator</span>
+  <span class="prop">variant</span>=<span class="str">"positive"</span>
+  <span class="prop">label</span>=<span class="str">"MRR up 12%"</span>
+  <span class="prop">context</span>=<span class="str">"vs. last month"</span>
+/&gt;
+
+&lt;<span class="prop">JvStatusIndicator</span>
+  <span class="prop">variant</span>=<span class="str">"negative"</span>
+  <span class="prop">label</span>=<span class="str">"Churn up 3%"</span>
+/&gt;
+
+&lt;<span class="prop">JvStatusIndicator</span>
+  <span class="prop">variant</span>=<span class="str">"warning"</span>
+  <span class="prop">label</span>=<span class="str">"Stale data"</span>
+  <span class="prop">context</span>=<span class="str">"last sync 2h ago"</span>
+/&gt;</pre>
+      </div>
+    </div>
+  </div>
+
+  <div class="voice-box" style="margin-top:20px">
+    <div class="voice-box-title">Brand voice — label copy (Sage transparency)</div>
+    <div class="voice-row">
+      <div class="voice-good"><div class="voice-indicator">✓ specific</div>"MRR up 12%"<br>"Churn up 3%"<br>"Live data"</div>
+      <div class="voice-bad"><div class="voice-indicator">✗ vague</div>"Positive trend detected"<br>"Status changed"<br>"Good"</div>
+    </div>
+  </div>
+</section>
+
+<!-- ─────────────────────────────────────────────── -->
+<!-- JvEmptyState -->
+<!-- ─────────────────────────────────────────────── -->
+<section id="JvEmptyState">
+  <h2>JvEmptyState</h2>
+  <p class="section-desc">
+    Empty state display with brand-voiced copy patterns. Confident and action-oriented — never apologetic. Embodies the Magician archetype: "I can build that for you."
+  </p>
+
+  <div class="two-col">
+    <div>
+      <div class="label">Preview</div>
+      <div class="stripe-app-frame">
+        <div class="stripe-app-titlebar">
+          <div class="stripe-app-icon"></div>
+          <div class="stripe-app-title">Javelin</div>
+        </div>
+        <div class="stripe-app-body">
+          <div class="s-box p-large gap-medium align-x-center" style="text-align:center; align-items:center">
+            <span class="s-inline semibold" style="font-size:15px">No conversations yet</span>
+            <span class="s-inline secondary" style="font-size:13px">Ask a question to get started. Try: "What's my MRR?"</span>
+            <div class="s-box x gap-small wrap" style="justify-content:center">
+              <button class="s-button secondary small">What's my MRR?</button>
+              <button class="s-button secondary small">Top customers</button>
+              <button class="s-button secondary small">Growth rate</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div>
+      <div class="label">Usage</div>
+      <div class="code-block">
+        <div class="code-toolbar">
+          <span class="code-dot red"></span><span class="code-dot yellow"></span><span class="code-dot green"></span>
+        </div>
+        <pre>&lt;<span class="prop">JvEmptyState</span>
+  <span class="prop">title</span>=<span class="str">"No conversations yet"</span>
+  <span class="prop">description</span>=<span class="str">"Ask a question to get
+    started. Try: 'What's my MRR?'"</span>
+  <span class="prop">suggestions</span>={[
+    { <span class="prop">label</span>: <span class="str">"What's my MRR?"</span>,
+      <span class="prop">value</span>: <span class="str">"What's my MRR?"</span> },
+    { <span class="prop">label</span>: <span class="str">"Top customers"</span>,
+      <span class="prop">value</span>: <span class="str">"Who are my top 10..."</span> },
+  ]}
+  <span class="prop">onSelectSuggestion</span>={onSelectPrompt}
+/&gt;</pre>
+      </div>
+    </div>
+  </div>
+
+  <div class="voice-box" style="margin-top:20px">
+    <div class="voice-box-title">Brand voice — empty state copy</div>
+    <div class="voice-row">
+      <div class="voice-good"><div class="voice-indicator">✓ direct</div>"No conversations yet"<br>"No data found"<br>"No dashboards built"</div>
+      <div class="voice-bad"><div class="voice-indicator">✗ apologetic</div>"It looks like you haven't started any conversations yet"<br>"Nothing to see here!"</div>
+    </div>
+  </div>
+</section>
+
+<!-- ─────────────────────────────────────────────── -->
+<!-- JvMetricDisplay -->
+<!-- ─────────────────────────────────────────────── -->
+<section id="JvMetricDisplay">
+  <h2>JvMetricDisplay</h2>
+  <p class="section-desc">
+    Display a single metric with label, value, trend badge, and optional freshness indicator. The core analytics display primitive — implements the Sage transparency pattern.
+  </p>
+
+  <div class="two-col">
+    <div>
+      <div class="label">Variants</div>
+      <div class="stripe-app-frame">
+        <div class="stripe-app-titlebar">
+          <div class="stripe-app-icon"></div>
+          <div class="stripe-app-title">Javelin</div>
+        </div>
+        <div class="stripe-app-body s-box p-medium gap-medium">
+          <!-- Default with trend + freshness -->
+          <div class="s-box gap-xsmall">
+            <span class="s-inline caption">MRR</span>
+            <div class="s-box x gap-small align-center">
+              <span class="s-inline bold" style="font-size:22px">$5,200</span>
+              <span class="s-badge positive">+12%</span>
+            </div>
+            <span class="s-badge positive">Live data</span>
+          </div>
+          <div class="s-divider"></div>
+          <!-- Compact with negative trend -->
+          <div class="s-box x gap-medium">
+            <div class="s-box gap-xxsmall">
+              <span class="s-inline caption">Churn rate</span>
+              <div class="s-box x gap-xsmall align-center">
+                <span class="s-inline semibold">3.2%</span>
+                <span class="s-badge negative">+0.5%</span>
+              </div>
+            </div>
+            <div class="s-box gap-xxsmall">
+              <span class="s-inline caption">ARPU</span>
+              <div class="s-box x gap-xsmall align-center">
+                <span class="s-inline semibold">$85</span>
+                <span class="s-badge info">0%</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div>
+      <div class="label">Usage</div>
+      <div class="code-block">
+        <div class="code-toolbar">
+          <span class="code-dot red"></span><span class="code-dot yellow"></span><span class="code-dot green"></span>
+        </div>
+        <pre><span class="cmt">// Default size</span>
+&lt;<span class="prop">JvMetricDisplay</span>
+  <span class="prop">label</span>=<span class="str">"MRR"</span>
+  <span class="prop">value</span>=<span class="str">"$5,200"</span>
+  <span class="prop">trend</span>={{ <span class="prop">direction</span>: <span class="str">'up'</span>,
+            <span class="prop">label</span>: <span class="str">'+12%'</span> }}
+  <span class="prop">freshness</span>={{ <span class="prop">type</span>: <span class="str">'live'</span> }}
+/&gt;
+
+<span class="cmt">// Compact (inline/table context)</span>
+&lt;<span class="prop">JvMetricDisplay</span>
+  <span class="prop">label</span>=<span class="str">"Churn rate"</span>
+  <span class="prop">value</span>=<span class="str">"3.2%"</span>
+  <span class="prop">trend</span>={{ <span class="prop">direction</span>: <span class="str">'down'</span>,
+            <span class="prop">label</span>: <span class="str">'-0.5%'</span> }}
+  <span class="prop">size</span>=<span class="str">"compact"</span>
+/&gt;</pre>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ─────────────────────────────────────────────── -->
+<!-- JvActionBar -->
+<!-- ─────────────────────────────────────────────── -->
+<section id="JvActionBar">
+  <h2>JvActionBar</h2>
+  <p class="section-desc">
+    Consistent action grouping for primary, secondary, and destructive actions. Destructive actions are visually separated — a safety pattern aligned with Javelin's "transparent and safe" brand value.
+  </p>
+
+  <div class="two-col">
+    <div>
+      <div class="label">Variants</div>
+      <div class="stripe-app-frame">
+        <div class="stripe-app-titlebar">
+          <div class="stripe-app-icon"></div>
+          <div class="stripe-app-title">Javelin</div>
+        </div>
+        <div class="stripe-app-body s-box p-medium gap-medium">
+          <!-- Primary + secondary -->
+          <div>
+            <span class="s-inline caption" style="margin-bottom:8px; display:block">Primary + secondary</span>
+            <div class="s-box x gap-small" style="padding-top:8px">
+              <div style="flex:1"></div>
+              <button class="s-button secondary">Cancel</button>
+              <button class="s-button primary">Save changes</button>
+            </div>
+          </div>
+          <div class="s-divider"></div>
+          <!-- With destructive -->
+          <div>
+            <span class="s-inline caption" style="margin-bottom:8px; display:block">With destructive action</span>
+            <div class="s-box x gap-small space-between" style="padding-top:8px">
+              <button class="s-button destructive">Delete dashboard</button>
+              <div class="s-box x gap-small">
+                <button class="s-button secondary">Cancel</button>
+                <button class="s-button primary">Update 23 subscriptions</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div>
+      <div class="label">Usage</div>
+      <div class="code-block">
+        <div class="code-toolbar">
+          <span class="code-dot red"></span><span class="code-dot yellow"></span><span class="code-dot green"></span>
+        </div>
+        <pre><span class="cmt">// Primary + secondary</span>
+&lt;<span class="prop">JvActionBar</span>
+  <span class="prop">primary</span>={{ <span class="prop">label</span>: <span class="str">'Save changes'</span>,
+             <span class="prop">onPress</span>: handleSave }}
+  <span class="prop">secondary</span>={{ <span class="prop">label</span>: <span class="str">'Cancel'</span>,
+               <span class="prop">onPress</span>: handleCancel }}
+  <span class="prop">showDivider</span>
+/&gt;
+
+<span class="cmt">// With destructive action</span>
+&lt;<span class="prop">JvActionBar</span>
+  <span class="prop">primary</span>={{ <span class="prop">label</span>: <span class="str">'Update 23 subscriptions'</span>,
+             <span class="prop">onPress</span>: handleUpdate }}
+  <span class="prop">destructive</span>={{ <span class="prop">label</span>: <span class="str">'Delete dashboard'</span>,
+                  <span class="prop">onPress</span>: handleDelete }}
+/&gt;</pre>
+      </div>
+    </div>
+  </div>
+
+  <div class="voice-box" style="margin-top:20px">
+    <div class="voice-box-title">Brand voice — button labels</div>
+    <div class="voice-row">
+      <div class="voice-good"><div class="voice-indicator">✓ verb-first, specific</div>"Update 23 subscriptions"<br>"Delete this dashboard"<br>"Create weekly report"</div>
+      <div class="voice-bad"><div class="voice-indicator">✗ generic</div>"Submit"<br>"OK"<br>"Yes"<br>"Confirm"</div>
+    </div>
+  </div>
+</section>
+
+<!-- ─────────────────────────────────────────────── -->
+<!-- JvConfirmationPrompt -->
+<!-- ─────────────────────────────────────────────── -->
+<section id="JvConfirmationPrompt">
+  <h2>JvConfirmationPrompt</h2>
+  <p class="section-desc">
+    Safety confirmation for destructive or high-impact actions. Implements Javelin's core brand value: "Say what you did and why." Every action is explained before execution — Sage transparency in practice.
+  </p>
+
+  <div class="two-col">
+    <div>
+      <div class="label">Preview — destructive action</div>
+      <div class="stripe-app-frame">
+        <div class="stripe-app-titlebar">
+          <div class="stripe-app-icon"></div>
+          <div class="stripe-app-title">Javelin</div>
+        </div>
+        <div class="stripe-app-body s-box p-medium gap-medium bg-container" style="padding:16px; background:#F9FAFB; border-radius:0">
+          <div class="s-banner critical">
+            <div class="s-banner-title">Update 23 subscriptions to the Pro plan</div>
+            <div class="s-banner-desc">This will change the plan for 23 active subscriptions. 2 subscriptions with pending invoices will be skipped. This action can be reversed.</div>
+          </div>
+          <div class="s-box gap-xsmall">
+            <div class="s-box x gap-small">
+              <span class="s-inline semibold" style="font-size:12px">cus_001</span>
+              <span class="s-inline secondary" style="font-size:12px">Pro plan → Enterprise</span>
+            </div>
+            <div class="s-box x gap-small">
+              <span class="s-inline semibold" style="font-size:12px">cus_002</span>
+              <span class="s-inline secondary" style="font-size:12px">Basic plan → Pro</span>
+            </div>
+          </div>
+          <div class="s-divider"></div>
+          <div class="s-box x gap-small space-between">
+            <button class="s-button secondary">Cancel</button>
+            <button class="s-button destructive">Update 23 subscriptions</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div>
+      <div class="label">Usage</div>
+      <div class="code-block">
+        <div class="code-toolbar">
+          <span class="code-dot red"></span><span class="code-dot yellow"></span><span class="code-dot green"></span>
+        </div>
+        <pre>&lt;<span class="prop">JvConfirmationPrompt</span>
+  <span class="prop">title</span>=<span class="str">"Update 23 subscriptions
+    to the Pro plan"</span>
+  <span class="prop">description</span>=<span class="str">"This will change the plan
+    for 23 active subscriptions.
+    2 with pending invoices will
+    be skipped. Reversible."</span>
+  <span class="prop">affectedItems</span>={[
+    { <span class="prop">label</span>: <span class="str">'cus_001'</span>,
+      <span class="prop">detail</span>: <span class="str">'Pro → Enterprise'</span> },
+  ]}
+  <span class="prop">confirmLabel</span>=<span class="str">"Update 23 subscriptions"</span>
+  <span class="prop">onConfirm</span>={handleConfirm}
+  <span class="prop">onCancel</span>={handleCancel}
+  <span class="prop">destructive</span>
+/&gt;</pre>
+      </div>
+    </div>
+  </div>
+
+  <div class="voice-box" style="margin-top:20px">
+    <div class="voice-box-title">Brand voice — description copy (Sage pattern)</div>
+    <div class="voice-row">
+      <div class="voice-good"><div class="voice-indicator">✓ specific, complete</div>"This will change the plan for 23 active subscriptions. 2 subscriptions with pending invoices will be skipped. This action can be reversed."</div>
+      <div class="voice-bad"><div class="voice-indicator">✗ hedging, vague</div>"This action may affect some subscriptions. Are you sure you want to proceed?"</div>
+    </div>
+  </div>
+</section>
+
+<!-- ─────────────────────────────────────────────── -->
+<!-- JvFreshnessIndicator -->
+<!-- ─────────────────────────────────────────────── -->
+<section id="JvFreshnessIndicator">
+  <h2>JvFreshnessIndicator</h2>
+  <p class="section-desc">
+    Displays data freshness state as a badge. Extracted from MessageBubble for reuse across metric displays, dashboard headers, and data tables. Implements the Sage transparency principle: always tell users how fresh their data is.
+  </p>
+
+  <div class="two-col">
+    <div>
+      <div class="label">Both states</div>
+      <div class="stripe-app-frame">
+        <div class="stripe-app-titlebar">
+          <div class="stripe-app-icon"></div>
+          <div class="stripe-app-title">Javelin</div>
+        </div>
+        <div class="stripe-app-body s-box p-medium gap-small">
+          <div class="s-box x gap-small align-center">
+            <span class="s-inline secondary" style="font-size:13px">type="live"</span>
+            <span class="s-badge positive">Live data</span>
+          </div>
+          <div class="s-box x gap-small align-center">
+            <span class="s-inline secondary" style="font-size:13px">type="cached"</span>
+            <span class="s-badge info">Data as of 3/10/2026, 10:00 AM</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div>
+      <div class="label">Usage</div>
+      <div class="code-block">
+        <div class="code-toolbar">
+          <span class="code-dot red"></span><span class="code-dot yellow"></span><span class="code-dot green"></span>
+        </div>
+        <pre><span class="cmt">// Live data</span>
+&lt;<span class="prop">JvFreshnessIndicator</span>
+  <span class="prop">type</span>=<span class="str">"live"</span>
+/&gt;
+
+<span class="cmt">// Cached with timestamp</span>
+&lt;<span class="prop">JvFreshnessIndicator</span>
+  <span class="prop">type</span>=<span class="str">"cached"</span>
+  <span class="prop">syncedAt</span>=<span class="str">"2026-03-10T10:00:00Z"</span>
+/&gt;</pre>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ─────────────────────────────────────────────── -->
+<!-- JvLoadingState -->
+<!-- ─────────────────────────────────────────────── -->
+<section id="JvLoadingState">
+  <h2>JvLoadingState</h2>
+  <p class="section-desc">
+    Brand-consistent loading indicator with progressive status messaging. After 5 seconds (when <code>startedAt</code> is provided), the message updates and an extended-wait banner appears. Formalizes the ThinkingIndicator pattern.
+  </p>
+
+  <div class="two-col">
+    <div>
+      <div class="label">States</div>
+      <div class="stripe-app-frame">
+        <div class="stripe-app-titlebar">
+          <div class="stripe-app-icon"></div>
+          <div class="stripe-app-title">Javelin</div>
+        </div>
+        <div class="stripe-app-body s-box p-medium gap-medium">
+          <!-- Default -->
+          <div class="s-box gap-small">
+            <div class="s-box x gap-small align-center">
+              <div class="s-spinner"></div>
+              <span class="s-inline secondary" style="font-size:13px">Analyzing your data...</span>
+            </div>
+          </div>
+          <div class="s-divider"></div>
+          <!-- Extended wait -->
+          <div class="s-box gap-small">
+            <div class="s-box x gap-small align-center">
+              <div class="s-spinner"></div>
+              <span class="s-inline secondary" style="font-size:13px">Fetching fresh data from Stripe...</span>
+            </div>
+            <div class="s-banner default">
+              <div class="s-banner-desc">Still working — fetching the latest data from Stripe to give you an accurate answer.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div>
+      <div class="label">Usage</div>
+      <div class="code-block">
+        <div class="code-toolbar">
+          <span class="code-dot red"></span><span class="code-dot yellow"></span><span class="code-dot green"></span>
+        </div>
+        <pre><span class="cmt">// Default</span>
+&lt;<span class="prop">JvLoadingState</span> /&gt;
+
+<span class="cmt">// Custom message</span>
+&lt;<span class="prop">JvLoadingState</span>
+  <span class="prop">message</span>=<span class="str">"Fetching your top customers..."</span>
+/&gt;
+
+<span class="cmt">// Progressive (auto-updates after 5s)</span>
+&lt;<span class="prop">JvLoadingState</span>
+  <span class="prop">startedAt</span>={Date.now()}
+/&gt;
+
+<span class="cmt">// Force extended state</span>
+&lt;<span class="prop">JvLoadingState</span>
+  <span class="prop">showExtendedWait</span>
+/&gt;</pre>
+      </div>
+    </div>
+  </div>
+
+  <div class="voice-box" style="margin-top:20px">
+    <div class="voice-box-title">Brand voice — loading message copy</div>
+    <div class="voice-row">
+      <div class="voice-good"><div class="voice-indicator">✓ specific</div>"Analyzing your data..."<br>"Fetching your top customers..."<br>"Building your dashboard..."</div>
+      <div class="voice-bad"><div class="voice-indicator">✗ generic</div>"Loading..."<br>"Please wait..."<br>"Processing..."</div>
+    </div>
+  </div>
+</section>
+
+<!-- ─────────────────────────────────────────────── -->
+<!-- JvPromptSuggestions -->
+<!-- ─────────────────────────────────────────────── -->
+<section id="JvPromptSuggestions">
+  <h2>JvPromptSuggestions</h2>
+  <p class="section-desc">
+    Render a wrapping row of prompt suggestion buttons with an optional label header. Formalizes the guided prompts pattern from WelcomePrompt — makes it reusable across views and empty states.
+  </p>
+
+  <div class="two-col">
+    <div>
+      <div class="label">Preview</div>
+      <div class="stripe-app-frame">
+        <div class="stripe-app-titlebar">
+          <div class="stripe-app-icon"></div>
+          <div class="stripe-app-title">Javelin</div>
+        </div>
+        <div class="stripe-app-body s-box p-medium gap-small">
+          <!-- With label -->
+          <div class="s-box gap-small">
+            <span class="s-inline semibold" style="font-size:13px">Try asking</span>
+            <div class="s-box x gap-small wrap">
+              <button class="s-button secondary small">What's my MRR?</button>
+              <button class="s-button secondary small">How's churn trending?</button>
+              <button class="s-button secondary small">Revenue by product</button>
+              <button class="s-button secondary small">Top customers</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div>
+      <div class="label">Usage</div>
+      <div class="code-block">
+        <div class="code-toolbar">
+          <span class="code-dot red"></span><span class="code-dot yellow"></span><span class="code-dot green"></span>
+        </div>
+        <pre>&lt;<span class="prop">JvPromptSuggestions</span>
+  <span class="prop">label</span>=<span class="str">"Try asking"</span>
+  <span class="prop">suggestions</span>={[
+    { <span class="prop">label</span>: <span class="str">"What's my MRR?"</span>,
+      <span class="prop">value</span>: <span class="str">"What's my MRR?"</span> },
+    { <span class="prop">label</span>: <span class="str">"How's churn trending?"</span>,
+      <span class="prop">value</span>: <span class="str">"How is my churn rate
+        trending over the last
+        3 months?"</span> },
+    { <span class="prop">label</span>: <span class="str">"Revenue by product"</span>,
+      <span class="prop">value</span>: <span class="str">"What's my revenue
+        breakdown by product?"</span> },
+  ]}
+  <span class="prop">onSelect</span>={onSelectPrompt}
+/&gt;</pre>
+      </div>
+    </div>
+  </div>
+
+  <div class="voice-box" style="margin-top:20px">
+    <div class="voice-box-title">Brand voice — suggestion labels</div>
+    <div class="voice-row">
+      <div class="voice-good"><div class="voice-indicator">✓ operator language</div>"What's my MRR?"<br>"Top customers"<br>"How's churn trending?"</div>
+      <div class="voice-bad"><div class="voice-indicator">✗ technical/verbose</div>"Calculate monthly recurring revenue"<br>"List customers sorted by lifetime value"</div>
+    </div>
+  </div>
+</section>
+
+<!-- ─────────────────────────────────────────────── -->
+<!-- TOKEN MAP -->
+<!-- ─────────────────────────────────────────────── -->
+<section id="tokens">
+  <h2>Brand Token Map</h2>
+  <p class="section-desc">
+    How Javelin's brand palette maps to Stripe's design tokens. Brand hex colors are reserved for the app icon, marketplace images, and external touchpoints only — never used inside the extension.
+  </p>
+
+  <div class="label" style="margin-bottom:16px">Color tokens</div>
+  <table class="token-table" style="margin-bottom:40px">
+    <thead>
+      <tr>
+        <th>Stripe token</th>
+        <th>Brand intent</th>
+        <th>Javelin brand hex</th>
+        <th>Fidelity</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>primary</td>
+        <td>Accent / links / active states</td>
+        <td><code>#4F46E5</code> (Indigo)</td>
+        <td>Low — Stripe renders its own blue</td>
+      </tr>
+      <tr>
+        <td>success / Badge positive</td>
+        <td>Success / positive metrics / live data</td>
+        <td><code>#10B981</code> (Signal Green)</td>
+        <td>Medium — both are green, exact shade differs</td>
+      </tr>
+      <tr>
+        <td>warning / Badge warning</td>
+        <td>Warnings / attention / stale data</td>
+        <td><code>#F59E0B</code> (Alert Amber)</td>
+        <td>Medium — both amber/yellow family</td>
+      </tr>
+      <tr>
+        <td>critical / Badge negative</td>
+        <td>Errors / destructive actions</td>
+        <td>— (not in brand palette)</td>
+        <td>N/A — Stripe's native critical</td>
+      </tr>
+      <tr>
+        <td>container</td>
+        <td>Card backgrounds / grouped content</td>
+        <td><code>#F3F4F6</code> (Neutral 100)</td>
+        <td>Medium — both are light gray</td>
+      </tr>
+      <tr>
+        <td>secondary</td>
+        <td>Secondary text / labels / metadata</td>
+        <td>Implicit secondary</td>
+        <td>High — standard secondary treatment</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="label" style="margin-bottom:16px">Spacing vocabulary</div>
+  <table class="token-table" style="margin-bottom:40px">
+    <thead>
+      <tr>
+        <th>Stripe token</th>
+        <th>Pixel value</th>
+        <th>Usage in Jv* components</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td>xxsmall</td><td>2px</td><td>Between tightly coupled elements (metric label/value)</td></tr>
+      <tr><td>xsmall</td><td>4px</td><td>Between label and value, between icon and text</td></tr>
+      <tr><td>small</td><td>8px</td><td>Between items in a list, between buttons, between badges</td></tr>
+      <tr><td>medium</td><td>16px</td><td>Between content sections, container padding, page margin</td></tr>
+      <tr><td>large</td><td>24px</td><td>Empty state padding, between major page regions</td></tr>
+    </tbody>
+  </table>
+
+  <div class="label" style="margin-bottom:16px">Font tokens</div>
+  <table class="token-table">
+    <thead>
+      <tr>
+        <th>Stripe token</th>
+        <th>Brand intent</th>
+        <th>Used in</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td>font: 'heading'</td><td>Section headings (Inter Semibold on external)</td><td>JvSectionHeader</td></tr>
+      <tr><td>font: 'caption'</td><td>Metric labels, secondary metadata, timestamps</td><td>JvMetricDisplay, JvSectionHeader subtitle</td></tr>
+      <tr><td>fontWeight: 'bold'</td><td>Metric values (default size)</td><td>JvMetricDisplay</td></tr>
+      <tr><td>fontWeight: 'semibold'</td><td>Card titles, metric values (compact), empty state titles</td><td>JvCard, JvEmptyState, JvPromptSuggestions label</td></tr>
+      <tr><td>color: 'secondary'</td><td>Descriptions, metadata, timestamps</td><td>All components</td></tr>
+    </tbody>
+  </table>
+</section>
+
+</body>
+</html>

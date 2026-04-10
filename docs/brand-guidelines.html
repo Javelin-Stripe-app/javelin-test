@@ -1,0 +1,1283 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Javelin Brand Guidelines</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --indigo: #4F46E5;
+      --deep: #3730A3;
+      --light: #C7D2FE;
+      --green: #10B981;
+      --amber: #F59E0B;
+      --n900: #111827;
+      --n100: #F3F4F6;
+      --white: #FFFFFF;
+      --n400: #9CA3AF;
+      --n200: #E5E7EB;
+      --n600: #4B5563;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Inter', system-ui, sans-serif;
+      background: var(--white);
+      color: var(--n900);
+      line-height: 1.6;
+      font-size: 16px;
+    }
+
+    /* ─── NAV ─── */
+    nav {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: rgba(255,255,255,0.95);
+      backdrop-filter: blur(8px);
+      border-bottom: 1px solid var(--n200);
+      padding: 0 48px;
+    }
+    nav ul {
+      display: flex;
+      gap: 4px;
+      list-style: none;
+      overflow-x: auto;
+      padding: 12px 0;
+    }
+    nav a {
+      display: block;
+      padding: 6px 12px;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--n600);
+      text-decoration: none;
+      border-radius: 6px;
+      white-space: nowrap;
+      transition: background 0.15s, color 0.15s;
+    }
+    nav a:hover { background: var(--n100); color: var(--n900); }
+
+    /* ─── SECTIONS ─── */
+    section {
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 80px 48px;
+      border-bottom: 1px solid var(--n200);
+    }
+    section:last-of-type { border-bottom: none; }
+
+    h1 { font-size: 48px; font-weight: 700; letter-spacing: -0.02em; line-height: 1.1; }
+    h2 { font-size: 28px; font-weight: 700; letter-spacing: -0.01em; margin-bottom: 32px; }
+    h3 { font-size: 16px; font-weight: 600; margin-bottom: 8px; }
+    p  { color: var(--n600); line-height: 1.65; }
+
+    .label {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--n400);
+      margin-bottom: 12px;
+    }
+
+    /* ─── HERO ─── */
+    #hero {
+      background: var(--deep);
+      max-width: 100%;
+      padding: 100px 48px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .hero-inner {
+      max-width: 960px;
+      width: 100%;
+      display: flex;
+      align-items: center;
+      gap: 64px;
+    }
+    .hero-text { flex: 1; }
+    .wordmark {
+      font-size: 56px;
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      color: var(--white);
+      line-height: 1;
+      margin-bottom: 16px;
+    }
+    .tagline {
+      font-size: 22px;
+      font-weight: 400;
+      color: var(--light);
+      margin-bottom: 24px;
+    }
+    .version-pill {
+      display: inline-block;
+      padding: 4px 12px;
+      background: rgba(199,210,254,0.15);
+      border: 1px solid rgba(199,210,254,0.3);
+      border-radius: 100px;
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--light);
+    }
+
+    /* ─── LOGO SVG CONTAINER ─── */
+    .logo-mark-hero {
+      flex-shrink: 0;
+    }
+
+    /* ─── COLORS ─── */
+    .swatches {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+      gap: 16px;
+    }
+    .swatch {
+      border-radius: 12px;
+      overflow: hidden;
+      border: 1px solid var(--n200);
+    }
+    .swatch-color {
+      height: 80px;
+    }
+    .swatch-info {
+      padding: 12px;
+      background: var(--white);
+    }
+    .swatch-name {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--n900);
+      margin-bottom: 2px;
+    }
+    .swatch-hex {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      color: var(--n400);
+    }
+    .swatch-rgb {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      color: var(--n400);
+      margin-top: 2px;
+    }
+    .primary-badge {
+      display: inline-block;
+      margin-top: 6px;
+      padding: 2px 8px;
+      background: var(--light);
+      color: var(--deep);
+      border-radius: 100px;
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+
+    /* ─── TYPOGRAPHY ─── */
+    .type-specimens { display: flex; flex-direction: column; gap: 32px; }
+    .type-block {
+      padding: 32px;
+      border: 1px solid var(--n200);
+      border-radius: 12px;
+    }
+    .type-meta {
+      display: flex;
+      gap: 16px;
+      margin-bottom: 20px;
+    }
+    .type-tag {
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-size: 11px;
+      font-weight: 600;
+      background: var(--n100);
+      color: var(--n600);
+    }
+    .specimen-row { margin-bottom: 12px; }
+    .specimen-row:last-child { margin-bottom: 0; }
+    .spec-label {
+      font-size: 11px;
+      color: var(--n400);
+      margin-bottom: 4px;
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    /* ─── LOGO USAGE ─── */
+    .logo-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+    .logo-card {
+      border-radius: 12px;
+      padding: 40px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 16px;
+      border: 1px solid var(--n200);
+    }
+    .logo-card.dark { background: var(--deep); border-color: transparent; }
+    .logo-card.light { background: var(--white); }
+    .logo-card.neutral { background: var(--n100); }
+    .logo-caption {
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--n400);
+      text-align: center;
+    }
+    .logo-card.dark .logo-caption { color: rgba(199,210,254,0.6); }
+
+    .lockup {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+    .lockup-wordmark {
+      font-size: 28px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+    }
+    .lockup-wordmark.on-dark { color: var(--white); }
+    .lockup-wordmark.on-light { color: var(--n900); }
+
+    .clearspace-demo {
+      position: relative;
+      display: inline-block;
+    }
+    .clearspace-inner {
+      padding: 24px;
+      border: 2px dashed rgba(79,70,229,0.3);
+      border-radius: 4px;
+    }
+
+    /* ─── VOICE & TONE ─── */
+    .voice-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+    .voice-card {
+      border: 1px solid var(--n200);
+      border-radius: 12px;
+      overflow: hidden;
+    }
+    .voice-header {
+      padding: 16px 20px;
+      background: var(--n100);
+      border-bottom: 1px solid var(--n200);
+    }
+    .voice-attr {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--n900);
+    }
+    .voice-body { padding: 20px; }
+    .voice-example {
+      padding: 12px 16px;
+      border-radius: 8px;
+      font-size: 14px;
+      line-height: 1.5;
+      margin-bottom: 8px;
+    }
+    .voice-example.do {
+      background: #ECFDF5;
+      color: #065F46;
+      border-left: 3px solid var(--green);
+    }
+    .voice-example.dont {
+      background: #FEF3C7;
+      color: #92400E;
+      border-left: 3px solid var(--amber);
+      text-decoration: line-through;
+      opacity: 0.75;
+    }
+    .voice-do-label, .voice-dont-label {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      margin-bottom: 6px;
+    }
+    .voice-do-label { color: var(--green); }
+    .voice-dont-label { color: var(--amber); }
+
+    /* ─── MESSAGING ─── */
+    .message-card {
+      padding: 32px;
+      border: 1px solid var(--n200);
+      border-radius: 12px;
+      margin-bottom: 16px;
+    }
+    .message-card:last-child { margin-bottom: 0; }
+    .message-role {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--indigo);
+      margin-bottom: 12px;
+    }
+    .message-primary {
+      font-size: 32px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      color: var(--n900);
+      line-height: 1.2;
+    }
+    .message-body {
+      font-size: 16px;
+      color: var(--n600);
+      margin-top: 12px;
+      line-height: 1.65;
+    }
+    .message-sub {
+      font-size: 18px;
+      font-weight: 500;
+      color: var(--n900);
+    }
+
+    /* ─── DOS & DONTS ─── */
+    .dos-donts {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 32px;
+    }
+    .dos-col h3, .donts-col h3 {
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      margin-bottom: 16px;
+      padding-bottom: 12px;
+      border-bottom: 2px solid;
+    }
+    .dos-col h3 { color: var(--green); border-color: var(--green); }
+    .donts-col h3 { color: #EF4444; border-color: #EF4444; }
+    .dos-donts ul { list-style: none; display: flex; flex-direction: column; gap: 10px; }
+    .dos-donts li {
+      font-size: 14px;
+      color: var(--n600);
+      padding: 12px 16px;
+      border-radius: 8px;
+      line-height: 1.5;
+      display: flex;
+      gap: 10px;
+    }
+    .dos-col li { background: #ECFDF5; color: #065F46; }
+    .donts-col li { background: #FEF2F2; color: #991B1B; }
+    .dos-col li::before { content: "✓"; font-weight: 700; flex-shrink: 0; }
+    .donts-col li::before { content: "✗"; font-weight: 700; flex-shrink: 0; }
+
+    /* ─── ARCHETYPE ─── */
+    .archetype-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+      margin-bottom: 32px;
+    }
+    .archetype-card {
+      padding: 32px;
+      border-radius: 16px;
+      border: 1px solid var(--n200);
+    }
+    .archetype-card.primary {
+      background: linear-gradient(135deg, var(--indigo) 0%, var(--deep) 100%);
+      border-color: transparent;
+    }
+    .archetype-name {
+      font-size: 24px;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+    .archetype-card.primary .archetype-name { color: var(--white); }
+    .archetype-card.primary p { color: var(--light); }
+    .archetype-role {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      margin-bottom: 16px;
+    }
+    .archetype-card.primary .archetype-role {
+      color: rgba(199,210,254,0.7);
+    }
+    .archetype-card.secondary .archetype-role { color: var(--n400); }
+    .archetype-traits {
+      margin-top: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .trait {
+      font-size: 13px;
+      padding: 6px 10px;
+      border-radius: 6px;
+    }
+    .archetype-card.primary .trait {
+      background: rgba(255,255,255,0.1);
+      color: var(--light);
+    }
+    .archetype-card.secondary .trait {
+      background: var(--n100);
+      color: var(--n600);
+    }
+
+    .personality {
+      padding: 32px;
+      background: var(--n100);
+      border-radius: 16px;
+    }
+    .personality p {
+      font-size: 17px;
+      line-height: 1.7;
+      color: var(--n900);
+      font-style: italic;
+    }
+
+    /* ─── POSITIONING MAP ─── */
+    .pos-map {
+      background: var(--n100);
+      border-radius: 16px;
+      padding: 40px;
+      position: relative;
+      height: 320px;
+      border: 1px solid var(--n200);
+    }
+    .axis-h, .axis-v {
+      position: absolute;
+      background: var(--n400);
+    }
+    .axis-h {
+      height: 1px;
+      width: calc(100% - 80px);
+      top: 50%;
+      left: 40px;
+    }
+    .axis-v {
+      width: 1px;
+      height: calc(100% - 80px);
+      left: 50%;
+      top: 40px;
+    }
+    .axis-label {
+      position: absolute;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--n400);
+    }
+    .pos-dot {
+      position: absolute;
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      transform: translate(-50%, -50%);
+    }
+    .pos-label {
+      position: absolute;
+      font-size: 12px;
+      font-weight: 600;
+      transform: translateX(-50%);
+    }
+    .pos-dot.javelin { background: var(--indigo); width: 16px; height: 16px; box-shadow: 0 0 0 4px rgba(79,70,229,0.2); }
+    .pos-dot.competitor { background: var(--n400); }
+    .pos-label.javelin { color: var(--indigo); }
+    .pos-label.competitor { color: var(--n600); }
+
+    /* ─── FOOTER ─── */
+    footer {
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 48px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-top: 1px solid var(--n200);
+    }
+    footer p { font-size: 13px; color: var(--n400); }
+
+    /* ─── UTILITIES ─── */
+    .mono { font-family: 'JetBrains Mono', monospace; }
+    .divider { height: 1px; background: var(--n200); margin: 32px 0; }
+
+    /* ─── SPEC TABLE ─── */
+    .spec-table { width: 100%; border-collapse: collapse; font-size: 14px; }
+    .spec-table th { text-align: left; font-weight: 600; font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--n400); padding: 8px 0; border-bottom: 1px solid var(--n200); }
+    .spec-table td { padding: 10px 0; border-bottom: 1px solid var(--n100); color: var(--n600); }
+    .spec-table td:first-child { font-weight: 500; color: var(--n900); width: 40%; }
+    .spec-table code { font-family: 'JetBrains Mono', monospace; font-size: 12px; background: var(--n100); padding: 2px 6px; border-radius: 4px; }
+
+    /* ─── SIZE LADDER ─── */
+    .size-ladder { display: flex; align-items: flex-end; gap: 24px; flex-wrap: wrap; }
+    .size-step { display: flex; flex-direction: column; align-items: center; gap: 8px; }
+    .size-label { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--n400); }
+
+    /* ─── MISUSE GRID ─── */
+    .misuse-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .misuse-item { display: flex; gap: 10px; font-size: 13px; padding: 12px 16px; background: #FEF2F2; color: #991B1B; border-radius: 8px; align-items: flex-start; }
+    .misuse-item::before { content: "✗"; font-weight: 700; flex-shrink: 0; }
+
+    @media (max-width: 640px) {
+      section { padding: 48px 24px; }
+      nav { padding: 0 24px; }
+      .hero-inner { flex-direction: column; gap: 40px; }
+      .logo-grid, .voice-grid, .archetype-grid, .dos-donts, .misuse-grid { grid-template-columns: 1fr; }
+      h1 { font-size: 36px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <ul>
+    <li><a href="#hero">Brand</a></li>
+    <li><a href="#colors">Colors</a></li>
+    <li><a href="#typography">Typography</a></li>
+    <li><a href="#logo">Logo</a></li>
+    <li><a href="#icon">Icon</a></li>
+    <li><a href="#voice">Voice & Tone</a></li>
+    <li><a href="#messaging">Messaging</a></li>
+    <li><a href="#dos-donts">Dos & Don'ts</a></li>
+    <li><a href="#archetype">Archetype</a></li>
+  </ul>
+</nav>
+
+<!-- HERO -->
+<section id="hero">
+  <div class="hero-inner">
+    <div class="hero-text">
+      <div class="label" style="color: rgba(199,210,254,0.6); margin-bottom: 20px;">Brand Guidelines · v1.0 MVB</div>
+      <div class="wordmark">Javelin</div>
+      <div class="tagline">Tell Stripe what to do.</div>
+      <span class="version-pill">2026-03-10 &nbsp;·&nbsp; Pre-seed / MVP</span>
+    </div>
+    <div class="logo-mark-hero">
+      <!-- Concept A: Precision Mark — diagonal javelin trajectory -->
+      <svg width="160" height="160" viewBox="0 0 160 160" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Javelin logo mark">
+        <rect width="160" height="160" rx="32" fill="#3730A3"/>
+        <!-- Main javelin shaft: lower-left to upper-right -->
+        <line x1="36" y1="124" x2="124" y2="36" stroke="white" stroke-width="10" stroke-linecap="round"/>
+        <!-- Arrowhead at upper-right -->
+        <polyline points="96,32 124,36 120,64" stroke="white" stroke-width="10" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+        <!-- Tail notch at lower-left -->
+        <line x1="36" y1="124" x2="28" y2="108" stroke="rgba(199,210,254,0.7)" stroke-width="6" stroke-linecap="round"/>
+        <line x1="36" y1="124" x2="52" y2="132" stroke="rgba(199,210,254,0.7)" stroke-width="6" stroke-linecap="round"/>
+      </svg>
+    </div>
+  </div>
+</section>
+
+<!-- COLORS -->
+<section id="colors">
+  <div class="label">02 — Visual Identity</div>
+  <h2>Color Palette</h2>
+  <p style="margin-bottom: 32px;">Eight colors. Deliberately restrained. Deep indigo differentiates Javelin from Stripe's violet (#635BFF) while remaining ecosystem-native.</p>
+  <div class="swatches">
+    <div class="swatch">
+      <div class="swatch-color" style="background:#4F46E5;"></div>
+      <div class="swatch-info">
+        <div class="swatch-name">Javelin Indigo</div>
+        <div class="swatch-hex">#4F46E5</div>
+        <div class="swatch-rgb">rgb(79, 70, 229)</div>
+        <span class="primary-badge">Primary</span>
+      </div>
+    </div>
+    <div class="swatch">
+      <div class="swatch-color" style="background:#3730A3;"></div>
+      <div class="swatch-info">
+        <div class="swatch-name">Javelin Deep</div>
+        <div class="swatch-hex">#3730A3</div>
+        <div class="swatch-rgb">rgb(55, 48, 163)</div>
+      </div>
+    </div>
+    <div class="swatch">
+      <div class="swatch-color" style="background:#C7D2FE; border-bottom: 1px solid #E5E7EB;"></div>
+      <div class="swatch-info">
+        <div class="swatch-name">Javelin Light</div>
+        <div class="swatch-hex">#C7D2FE</div>
+        <div class="swatch-rgb">rgb(199, 210, 254)</div>
+      </div>
+    </div>
+    <div class="swatch">
+      <div class="swatch-color" style="background:#10B981;"></div>
+      <div class="swatch-info">
+        <div class="swatch-name">Signal Green</div>
+        <div class="swatch-hex">#10B981</div>
+        <div class="swatch-rgb">rgb(16, 185, 129)</div>
+      </div>
+    </div>
+    <div class="swatch">
+      <div class="swatch-color" style="background:#F59E0B;"></div>
+      <div class="swatch-info">
+        <div class="swatch-name">Alert Amber</div>
+        <div class="swatch-hex">#F59E0B</div>
+        <div class="swatch-rgb">rgb(245, 158, 11)</div>
+      </div>
+    </div>
+    <div class="swatch">
+      <div class="swatch-color" style="background:#111827;"></div>
+      <div class="swatch-info">
+        <div class="swatch-name">Neutral 900</div>
+        <div class="swatch-hex">#111827</div>
+        <div class="swatch-rgb">rgb(17, 24, 39)</div>
+      </div>
+    </div>
+    <div class="swatch">
+      <div class="swatch-color" style="background:#F3F4F6; border-bottom: 1px solid #E5E7EB;"></div>
+      <div class="swatch-info">
+        <div class="swatch-name">Neutral 100</div>
+        <div class="swatch-hex">#F3F4F6</div>
+        <div class="swatch-rgb">rgb(243, 244, 246)</div>
+      </div>
+    </div>
+    <div class="swatch">
+      <div class="swatch-color" style="background:#FFFFFF; border-bottom: 1px solid #E5E7EB;"></div>
+      <div class="swatch-info">
+        <div class="swatch-name">White</div>
+        <div class="swatch-hex">#FFFFFF</div>
+        <div class="swatch-rgb">rgb(255, 255, 255)</div>
+      </div>
+    </div>
+  </div>
+  <div style="margin-top: 24px; padding: 16px 20px; background: #FEF3C7; border-radius: 8px; border-left: 3px solid var(--amber);">
+    <p style="font-size: 13px; color: #92400E;"><strong>Inside Stripe App UI:</strong> These colors cannot be applied directly. Use Stripe UI Toolkit design tokens (<span class="mono" style="font-size: 12px;">primary</span>, <span class="mono" style="font-size: 12px;">success</span>, <span class="mono" style="font-size: 12px;">container</span>) on <span class="mono" style="font-size: 12px;">Box</span> and <span class="mono" style="font-size: 12px;">Inline</span> components. Brand colors apply to the icon, marketplace listings, and external touchpoints only.</p>
+  </div>
+</section>
+
+<!-- TYPOGRAPHY -->
+<section id="typography">
+  <div class="label">03 — Visual Identity</div>
+  <h2>Typography</h2>
+  <p style="margin-bottom: 32px;">Inter for all display and body copy. JetBrains Mono for code references. No more than two font sizes per section.</p>
+  <div class="type-specimens">
+
+    <div class="type-block">
+      <div class="type-meta">
+        <span class="type-tag">Inter</span>
+        <span class="type-tag">Display / Headings</span>
+        <span class="type-tag">600 · 700</span>
+      </div>
+      <div class="specimen-row">
+        <div class="spec-label">700 · 48px · Letter-spacing -2%</div>
+        <div style="font-size: 48px; font-weight: 700; letter-spacing: -0.02em; line-height: 1.1;">Tell Stripe what to do.</div>
+      </div>
+      <div class="divider"></div>
+      <div class="specimen-row">
+        <div class="spec-label">700 · 32px</div>
+        <div style="font-size: 32px; font-weight: 700; letter-spacing: -0.01em; line-height: 1.2;">Builder, not analyst.</div>
+      </div>
+      <div class="divider"></div>
+      <div class="specimen-row">
+        <div class="spec-label">600 · 24px</div>
+        <div style="font-size: 24px; font-weight: 600;">Stripe-native. No code. No setup.</div>
+      </div>
+      <div class="divider"></div>
+      <div class="specimen-row">
+        <div class="spec-label">600 · 18px</div>
+        <div style="font-size: 18px; font-weight: 600;">Natural Language Builder</div>
+      </div>
+    </div>
+
+    <div class="type-block">
+      <div class="type-meta">
+        <span class="type-tag">Inter</span>
+        <span class="type-tag">Body</span>
+        <span class="type-tag">400 · 500</span>
+      </div>
+      <div class="specimen-row">
+        <div class="spec-label">400 · 16px · Line-height 1.65</div>
+        <div style="font-size: 16px; font-weight: 400; line-height: 1.65; color: var(--n600);">Javelin is an AI builder that lives inside your Stripe Dashboard. Describe what you need in plain language and Javelin builds it — custom dashboards, bulk metadata updates, automated workflows, and more.</div>
+      </div>
+      <div class="divider"></div>
+      <div class="specimen-row">
+        <div class="spec-label">500 · 14px</div>
+        <div style="font-size: 14px; font-weight: 500; color: var(--n600);">Every action is explained before execution. All changes require your confirmation.</div>
+      </div>
+    </div>
+
+    <div class="type-block">
+      <div class="type-meta">
+        <span class="type-tag">JetBrains Mono</span>
+        <span class="type-tag">Code / Technical</span>
+        <span class="type-tag">400</span>
+      </div>
+      <div class="specimen-row">
+        <div class="spec-label">400 · 15px</div>
+        <div style="font-family: 'JetBrains Mono', monospace; font-size: 15px; line-height: 1.7; background: var(--n100); padding: 16px 20px; border-radius: 8px; color: var(--n900);">"Show me MRR by plan for the last 6 months"</div>
+      </div>
+      <div class="divider"></div>
+      <div class="specimen-row">
+        <div class="spec-label">400 · 13px · Code references in running copy</div>
+        <div style="font-size: 14px; color: var(--n600);">Respond to events like <code style="font-family: 'JetBrains Mono', monospace; font-size: 12px; background: var(--n100); padding: 2px 6px; border-radius: 4px;">subscription.updated</code> or query <code style="font-family: 'JetBrains Mono', monospace; font-size: 12px; background: var(--n100); padding: 2px 6px; border-radius: 4px;">customer.metadata</code> fields.</div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- LOGO -->
+<section id="logo">
+  <div class="label">04 — Logo System</div>
+  <h2>Logo</h2>
+  <p style="margin-bottom: 32px;">The Precision Mark — Concept A. An abstract geometric mark evoking a javelin's trajectory. Single diagonal stroke with arrowhead, oriented lower-left to upper-right.</p>
+
+  <!-- Card 1: Design Concept -->
+  <div style="padding: 32px; background: var(--n100); border-radius: 12px; margin-bottom: 24px;">
+    <h3 style="font-size: 18px; font-weight: 700; margin-bottom: 12px;">The Precision Mark (Concept A)</h3>
+    <p style="margin-bottom: 16px;">An abstract geometric mark evoking a javelin's trajectory — a single diagonal line with arrowhead that suggests forward motion, precision, and directness. Maps directly to the brand essence: direct, capable, immediate.</p>
+    <ul style="list-style: none; display: flex; flex-direction: column; gap: 8px;">
+      <li style="font-size: 14px; color: var(--n600); display: flex; gap: 10px; align-items: flex-start;">
+        <span style="color: var(--indigo); font-weight: 700; flex-shrink: 0;">→</span>
+        Single geometric form — not a literal javelin illustration
+      </li>
+      <li style="font-size: 14px; color: var(--n600); display: flex; gap: 10px; align-items: flex-start;">
+        <span style="color: var(--indigo); font-weight: 700; flex-shrink: 0;">→</span>
+        Diagonal orientation (lower-left → upper-right) = forward/upward motion
+      </li>
+      <li style="font-size: 14px; color: var(--n600); display: flex; gap: 10px; align-items: flex-start;">
+        <span style="color: var(--indigo); font-weight: 700; flex-shrink: 0;">→</span>
+        2–3 geometric shapes maximum
+      </li>
+      <li style="font-size: 14px; color: var(--n600); display: flex; gap: 10px; align-items: flex-start;">
+        <span style="color: var(--indigo); font-weight: 700; flex-shrink: 0;">→</span>
+        No gradients in the primary mark
+      </li>
+    </ul>
+  </div>
+
+  <!-- Cards 2 & 3: Approved Colorways -->
+  <div class="logo-grid" style="margin-bottom: 24px;">
+    <!-- On white -->
+    <div class="logo-card light">
+      <div class="lockup">
+        <svg width="40" height="40" viewBox="0 0 160 160" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect width="160" height="160" rx="32" fill="#4F46E5"/>
+          <line x1="36" y1="124" x2="124" y2="36" stroke="white" stroke-width="10" stroke-linecap="round"/>
+          <polyline points="96,32 124,36 120,64" stroke="white" stroke-width="10" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+          <line x1="36" y1="124" x2="28" y2="108" stroke="rgba(199,210,254,0.7)" stroke-width="6" stroke-linecap="round"/>
+          <line x1="36" y1="124" x2="52" y2="132" stroke="rgba(199,210,254,0.7)" stroke-width="6" stroke-linecap="round"/>
+        </svg>
+        <span class="lockup-wordmark on-light">Javelin</span>
+      </div>
+      <div class="logo-caption">Lockup — Indigo on White<br><span class="mono" style="font-size: 11px;">#4F46E5 mark · #111827 wordmark</span></div>
+    </div>
+
+    <!-- On deep -->
+    <div class="logo-card dark">
+      <div class="lockup">
+        <svg width="40" height="40" viewBox="0 0 160 160" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect width="160" height="160" rx="32" fill="rgba(255,255,255,0.12)"/>
+          <line x1="36" y1="124" x2="124" y2="36" stroke="white" stroke-width="10" stroke-linecap="round"/>
+          <polyline points="96,32 124,36 120,64" stroke="white" stroke-width="10" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+          <line x1="36" y1="124" x2="28" y2="108" stroke="rgba(199,210,254,0.7)" stroke-width="6" stroke-linecap="round"/>
+          <line x1="36" y1="124" x2="52" y2="132" stroke="rgba(199,210,254,0.7)" stroke-width="6" stroke-linecap="round"/>
+        </svg>
+        <span class="lockup-wordmark on-dark">Javelin</span>
+      </div>
+      <div class="logo-caption">Lockup — White on Javelin Deep<br><span class="mono" style="font-size: 11px;">White on #3730A3</span></div>
+    </div>
+  </div>
+
+  <!-- Card 4: Mark Only -->
+  <div class="logo-card neutral" style="margin-bottom: 24px;">
+    <svg width="64" height="64" viewBox="0 0 160 160" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect width="160" height="160" rx="32" fill="#4F46E5"/>
+      <line x1="36" y1="124" x2="124" y2="36" stroke="white" stroke-width="10" stroke-linecap="round"/>
+      <polyline points="96,32 124,36 120,64" stroke="white" stroke-width="10" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+      <line x1="36" y1="124" x2="28" y2="108" stroke="rgba(199,210,254,0.7)" stroke-width="6" stroke-linecap="round"/>
+      <line x1="36" y1="124" x2="52" y2="132" stroke="rgba(199,210,254,0.7)" stroke-width="6" stroke-linecap="round"/>
+    </svg>
+    <div class="logo-caption">Mark only — use when wordmark is not needed or at small sizes</div>
+  </div>
+
+  <!-- Card 5: Construction Spec -->
+  <div style="padding: 32px; border: 1px solid var(--n200); border-radius: 12px; margin-bottom: 24px;">
+    <h3 style="margin-bottom: 16px;">Construction Specification</h3>
+    <table class="spec-table">
+      <thead>
+        <tr><th>Property</th><th>Value</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>ViewBox</td><td><code>0 0 160 160</code></td></tr>
+        <tr><td>Container</td><td>Rounded rect, <code>rx="32"</code> (20% of width)</td></tr>
+        <tr><td>Shaft</td><td>Diagonal line (36,124) → (124,36), <code>stroke-width="10"</code>, round caps</td></tr>
+        <tr><td>Arrowhead</td><td>Polyline (96,32) → (124,36) → (120,64), <code>stroke-width="10"</code>, round join</td></tr>
+        <tr><td>Tail fins</td><td>Two lines from (36,124), <code>stroke-width="6"</code>, <code>rgba(199,210,254,0.7)</code></td></tr>
+        <tr><td>Primary fill</td><td><code>#4F46E5</code> (Javelin Indigo) or <code>rgba(255,255,255,0.12)</code> on dark</td></tr>
+        <tr><td>Stroke color</td><td><code>#FFFFFF</code> (white) on both colorways</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Card 6: Clear Space -->
+  <div class="logo-card light" style="align-items: center; margin-bottom: 24px; padding: 40px;">
+    <h3 style="font-size: 13px; color: var(--n600); margin-bottom: 16px; font-weight: 600;">Clear Space</h3>
+    <div class="clearspace-demo">
+      <div class="clearspace-inner">
+        <svg width="48" height="48" viewBox="0 0 160 160" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect width="160" height="160" rx="32" fill="#4F46E5"/>
+          <line x1="36" y1="124" x2="124" y2="36" stroke="white" stroke-width="10" stroke-linecap="round"/>
+          <polyline points="96,32 124,36 120,64" stroke="white" stroke-width="10" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+          <line x1="36" y1="124" x2="28" y2="108" stroke="rgba(199,210,254,0.7)" stroke-width="6" stroke-linecap="round"/>
+          <line x1="36" y1="124" x2="52" y2="132" stroke="rgba(199,210,254,0.7)" stroke-width="6" stroke-linecap="round"/>
+        </svg>
+      </div>
+    </div>
+    <div class="logo-caption" style="margin-top: 12px;">Minimum clear space = height of "J" in wordmark on all four sides</div>
+  </div>
+
+  <!-- Card 7: Misuse -->
+  <div style="padding: 32px; border: 1px solid var(--n200); border-radius: 12px; margin-bottom: 24px;">
+    <h3 style="margin-bottom: 16px;">Misuse</h3>
+    <div class="misuse-grid">
+      <div class="misuse-item">Never stretch, skew, or rotate the mark</div>
+      <div class="misuse-item">Never recolor — only approved colorways</div>
+      <div class="misuse-item">Never place on busy or photographic backgrounds</div>
+      <div class="misuse-item">Never add drop shadows, outer glows, or effects</div>
+      <div class="misuse-item">Never crop or partially obscure the mark</div>
+      <div class="misuse-item">Never use the mark at less than 16px</div>
+    </div>
+  </div>
+
+  <!-- Card 8: Name Usage -->
+  <div style="padding: 32px; border: 1px solid var(--n200); border-radius: 12px;">
+    <h3 style="margin-bottom: 16px;">Name Usage</h3>
+    <ul style="list-style: none; display: flex; flex-direction: column; gap: 10px;">
+      <li style="font-size: 14px; color: var(--n600); display: flex; gap: 10px; align-items: flex-start;">
+        <span style="color: var(--indigo); font-weight: 700; flex-shrink: 0;">→</span>
+        <span><strong>Capitalization:</strong> Always "Javelin" — never "JAVELIN" or "javelin" in running text</span>
+      </li>
+      <li style="font-size: 14px; color: var(--n600); display: flex; gap: 10px; align-items: flex-start;">
+        <span style="color: var(--indigo); font-weight: 700; flex-shrink: 0;">→</span>
+        <span><strong>No article:</strong> "Javelin builds..." not "The Javelin builds..."</span>
+      </li>
+      <li style="font-size: 14px; color: var(--n600); display: flex; gap: 10px; align-items: flex-start;">
+        <span style="color: var(--indigo); font-weight: 700; flex-shrink: 0;">→</span>
+        <span><strong>Acceptable:</strong> "Javelin," "the Javelin builder," "Javelin for Stripe"</span>
+      </li>
+      <li style="font-size: 14px; color: var(--n600); display: flex; gap: 10px; align-items: flex-start;">
+        <span style="color: var(--indigo); font-weight: 700; flex-shrink: 0;">→</span>
+        <span><strong>Prohibited:</strong> "Javelin Stripe App," "Javelin AI," "Javelin Platform"</span>
+      </li>
+      <li style="font-size: 14px; color: var(--n600); display: flex; gap: 10px; align-items: flex-start;">
+        <span style="color: var(--indigo); font-weight: 700; flex-shrink: 0;">→</span>
+        <span><strong>Never use "app"</strong> — prohibited in Stripe marketplace names and general copy</span>
+      </li>
+    </ul>
+  </div>
+</section>
+
+<!-- ICON -->
+<section id="icon">
+  <div class="label">05 — App Icon</div>
+  <h2>Icon</h2>
+  <p style="margin-bottom: 32px;">The app icon is the most common touchpoint — Stripe Marketplace grid, Dashboard sidebar, browser favicon. It must be instantly recognizable from 300px down to 16px.</p>
+
+  <!-- Card 1: Primary Icon -->
+  <div class="logo-card neutral" style="margin-bottom: 24px; padding: 48px;">
+    <svg width="128" height="128" viewBox="0 0 160 160" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect width="160" height="160" rx="32" fill="#4F46E5"/>
+      <line x1="36" y1="124" x2="124" y2="36" stroke="white" stroke-width="10" stroke-linecap="round"/>
+      <polyline points="96,32 124,36 120,64" stroke="white" stroke-width="10" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+      <line x1="36" y1="124" x2="28" y2="108" stroke="rgba(199,210,254,0.7)" stroke-width="6" stroke-linecap="round"/>
+      <line x1="36" y1="124" x2="52" y2="132" stroke="rgba(199,210,254,0.7)" stroke-width="6" stroke-linecap="round"/>
+    </svg>
+    <div class="logo-caption">Primary app icon — Javelin Indigo <span class="mono" style="font-size: 11px;">#4F46E5</span></div>
+  </div>
+
+  <!-- Card 2: Size Ladder -->
+  <div style="padding: 32px; border: 1px solid var(--n200); border-radius: 12px; margin-bottom: 24px;">
+    <h3 style="margin-bottom: 20px;">Size Ladder</h3>
+    <div class="size-ladder">
+      <div class="size-step">
+        <svg width="80" height="80" viewBox="0 0 160 160" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect width="160" height="160" rx="32" fill="#4F46E5"/>
+          <line x1="36" y1="124" x2="124" y2="36" stroke="white" stroke-width="10" stroke-linecap="round"/>
+          <polyline points="96,32 124,36 120,64" stroke="white" stroke-width="10" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+          <line x1="36" y1="124" x2="28" y2="108" stroke="rgba(199,210,254,0.7)" stroke-width="6" stroke-linecap="round"/>
+          <line x1="36" y1="124" x2="52" y2="132" stroke="rgba(199,210,254,0.7)" stroke-width="6" stroke-linecap="round"/>
+        </svg>
+        <div class="size-label">300px</div>
+        <div style="font-size: 11px; color: var(--n400);">Marketplace listing</div>
+      </div>
+      <div class="size-step">
+        <svg width="64" height="64" viewBox="0 0 160 160" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect width="160" height="160" rx="32" fill="#4F46E5"/>
+          <line x1="36" y1="124" x2="124" y2="36" stroke="white" stroke-width="10" stroke-linecap="round"/>
+          <polyline points="96,32 124,36 120,64" stroke="white" stroke-width="10" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+          <line x1="36" y1="124" x2="28" y2="108" stroke="rgba(199,210,254,0.7)" stroke-width="6" stroke-linecap="round"/>
+          <line x1="36" y1="124" x2="52" y2="132" stroke="rgba(199,210,254,0.7)" stroke-width="6" stroke-linecap="round"/>
+        </svg>
+        <div class="size-label">128px</div>
+        <div style="font-size: 11px; color: var(--n400);">Marketplace grid min</div>
+      </div>
+      <div class="size-step">
+        <svg width="40" height="40" viewBox="0 0 160 160" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect width="160" height="160" rx="32" fill="#4F46E5"/>
+          <line x1="36" y1="124" x2="124" y2="36" stroke="white" stroke-width="10" stroke-linecap="round"/>
+          <polyline points="96,32 124,36 120,64" stroke="white" stroke-width="10" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+          <line x1="36" y1="124" x2="28" y2="108" stroke="rgba(199,210,254,0.7)" stroke-width="6" stroke-linecap="round"/>
+          <line x1="36" y1="124" x2="52" y2="132" stroke="rgba(199,210,254,0.7)" stroke-width="6" stroke-linecap="round"/>
+        </svg>
+        <div class="size-label">64px</div>
+        <div style="font-size: 11px; color: var(--n400);">Dashboard display</div>
+      </div>
+      <div class="size-step">
+        <svg width="24" height="24" viewBox="0 0 160 160" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect width="160" height="160" rx="32" fill="#4F46E5"/>
+          <line x1="36" y1="124" x2="124" y2="36" stroke="white" stroke-width="10" stroke-linecap="round"/>
+          <polyline points="96,32 124,36 120,64" stroke="white" stroke-width="10" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+          <line x1="36" y1="124" x2="28" y2="108" stroke="rgba(199,210,254,0.7)" stroke-width="6" stroke-linecap="round"/>
+          <line x1="36" y1="124" x2="52" y2="132" stroke="rgba(199,210,254,0.7)" stroke-width="6" stroke-linecap="round"/>
+        </svg>
+        <div class="size-label">32px</div>
+        <div style="font-size: 11px; color: var(--n400);">Avatar / tab</div>
+      </div>
+      <div class="size-step">
+        <svg width="16" height="16" viewBox="0 0 160 160" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect width="160" height="160" rx="32" fill="#4F46E5"/>
+          <line x1="36" y1="124" x2="124" y2="36" stroke="white" stroke-width="10" stroke-linecap="round"/>
+          <polyline points="96,32 124,36 120,64" stroke="white" stroke-width="10" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+          <line x1="36" y1="124" x2="28" y2="108" stroke="rgba(199,210,254,0.7)" stroke-width="6" stroke-linecap="round"/>
+          <line x1="36" y1="124" x2="52" y2="132" stroke="rgba(199,210,254,0.7)" stroke-width="6" stroke-linecap="round"/>
+        </svg>
+        <div class="size-label">16px</div>
+        <div style="font-size: 11px; color: var(--n400);">Favicon</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Card 3: Stripe Marketplace Requirements -->
+  <div style="padding: 32px; border: 1px solid var(--n200); border-radius: 12px; margin-bottom: 24px;">
+    <h3 style="margin-bottom: 16px;">Stripe Marketplace Requirements</h3>
+    <table class="spec-table">
+      <thead>
+        <tr><th>Requirement</th><th>Specification</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Minimum size</td><td>300 x 300 px</td></tr>
+        <tr><td>Aspect ratio</td><td>1:1 (square)</td></tr>
+        <tr><td>Format</td><td>PNG or JPG</td></tr>
+        <tr><td>Max file size</td><td>10 MB</td></tr>
+        <tr><td>Distinctive at</td><td>128px (marketplace grid)</td></tr>
+        <tr><td>Must not contain</td><td>Stripe's name, logo, or brand elements</td></tr>
+        <tr><td>Background</td><td>Solid color or simple gradient — no photos</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Card 4: Background Treatments -->
+  <div class="logo-grid" style="margin-bottom: 8px;">
+    <div class="logo-card neutral" style="background: var(--indigo);">
+      <svg width="64" height="64" viewBox="0 0 160 160" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <rect width="160" height="160" rx="32" fill="rgba(255,255,255,0.12)"/>
+        <line x1="36" y1="124" x2="124" y2="36" stroke="white" stroke-width="10" stroke-linecap="round"/>
+        <polyline points="96,32 124,36 120,64" stroke="white" stroke-width="10" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+        <line x1="36" y1="124" x2="28" y2="108" stroke="rgba(199,210,254,0.7)" stroke-width="6" stroke-linecap="round"/>
+        <line x1="36" y1="124" x2="52" y2="132" stroke="rgba(199,210,254,0.7)" stroke-width="6" stroke-linecap="round"/>
+      </svg>
+      <div class="logo-caption" style="color: rgba(199,210,254,0.6);">Solid Indigo <span class="mono" style="font-size: 11px;">#4F46E5</span></div>
+    </div>
+    <div class="logo-card dark">
+      <svg width="64" height="64" viewBox="0 0 160 160" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <rect width="160" height="160" rx="32" fill="rgba(255,255,255,0.12)"/>
+        <line x1="36" y1="124" x2="124" y2="36" stroke="white" stroke-width="10" stroke-linecap="round"/>
+        <polyline points="96,32 124,36 120,64" stroke="white" stroke-width="10" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+        <line x1="36" y1="124" x2="28" y2="108" stroke="rgba(199,210,254,0.7)" stroke-width="6" stroke-linecap="round"/>
+        <line x1="36" y1="124" x2="52" y2="132" stroke="rgba(199,210,254,0.7)" stroke-width="6" stroke-linecap="round"/>
+      </svg>
+      <div class="logo-caption">Solid Deep <span class="mono" style="font-size: 11px;">#3730A3</span></div>
+    </div>
+  </div>
+  <p style="font-size: 13px; color: var(--n600); margin-bottom: 24px; padding: 0 4px;">A subtle gradient is acceptable for the icon variant. No gradients on the mark itself.</p>
+
+  <!-- Card 5: Current Icon Assessment -->
+  <div style="padding: 24px 28px; background: #FEF3C7; border-radius: 12px; border-left: 4px solid var(--amber); margin-bottom: 24px;">
+    <h3 style="font-size: 14px; font-weight: 700; color: #92400E; margin-bottom: 10px;">Current icon needs replacement</h3>
+    <p style="font-size: 13px; color: #92400E; margin-bottom: 12px;">The current <code style="font-family: 'JetBrains Mono', monospace; font-size: 12px; background: rgba(146,64,14,0.1); padding: 2px 6px; border-radius: 4px;">icon.png</code> is a radial gradient — a soft blue-violet glow on dark navy. It lacks:</p>
+    <ul style="list-style: none; display: flex; flex-direction: column; gap: 6px; margin-bottom: 14px;">
+      <li style="font-size: 13px; color: #92400E; display: flex; gap: 8px; align-items: flex-start;">
+        <span style="font-weight: 700; flex-shrink: 0;">-</span>
+        A distinctive mark or symbol
+      </li>
+      <li style="font-size: 13px; color: #92400E; display: flex; gap: 8px; align-items: flex-start;">
+        <span style="font-weight: 700; flex-shrink: 0;">-</span>
+        Legibility at small sizes (reads as a blur/dot)
+      </li>
+      <li style="font-size: 13px; color: #92400E; display: flex; gap: 8px; align-items: flex-start;">
+        <span style="font-weight: 700; flex-shrink: 0;">-</span>
+        Connection to the brand name or product concept
+      </li>
+      <li style="font-size: 13px; color: #92400E; display: flex; gap: 8px; align-items: flex-start;">
+        <span style="font-weight: 700; flex-shrink: 0;">-</span>
+        Differentiation in the marketplace grid
+      </li>
+    </ul>
+    <p style="font-size: 13px; color: #92400E;"><strong>Replace with the Precision Mark before marketplace listing.</strong></p>
+  </div>
+
+  <!-- Card 6: Feature Image Specs -->
+  <div style="padding: 32px; border: 1px solid var(--n200); border-radius: 12px;">
+    <h3 style="margin-bottom: 16px;">Feature Image Specifications</h3>
+    <ul style="list-style: none; display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px;">
+      <li style="font-size: 14px; color: var(--n600); display: flex; gap: 10px; align-items: flex-start;">
+        <span style="color: var(--indigo); font-weight: 700; flex-shrink: 0;">→</span>
+        Min width: 1600px, PNG/JPG, under 10MB
+      </li>
+      <li style="font-size: 14px; color: var(--n600); display: flex; gap: 10px; align-items: flex-start;">
+        <span style="color: var(--indigo); font-weight: 700; flex-shrink: 0;">→</span>
+        Must show Javelin within Stripe Dashboard context
+      </li>
+      <li style="font-size: 14px; color: var(--n600); display: flex; gap: 10px; align-items: flex-start;">
+        <span style="color: var(--indigo); font-weight: 700; flex-shrink: 0;">→</span>
+        Use mock data, never real customer data
+      </li>
+      <li style="font-size: 14px; color: var(--n600); display: flex; gap: 10px; align-items: flex-start;">
+        <span style="color: var(--indigo); font-weight: 700; flex-shrink: 0;">→</span>
+        Annotate with brand colors
+      </li>
+    </ul>
+    <h3 style="font-size: 13px; font-weight: 600; color: var(--n400); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 12px;">Recommended Images</h3>
+    <ol style="list-style: none; display: flex; flex-direction: column; gap: 10px; counter-reset: feat-counter;">
+      <li style="font-size: 14px; color: var(--n600); display: flex; gap: 12px; align-items: flex-start;">
+        <span style="min-width: 24px; height: 24px; background: var(--indigo); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; flex-shrink: 0;">1</span>
+        Prompt interface with request + resulting output
+      </li>
+      <li style="font-size: 14px; color: var(--n600); display: flex; gap: 12px; align-items: flex-start;">
+        <span style="min-width: 24px; height: 24px; background: var(--indigo); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; flex-shrink: 0;">2</span>
+        Custom dashboard in Stripe Dashboard drawer
+      </li>
+      <li style="font-size: 14px; color: var(--n600); display: flex; gap: 12px; align-items: flex-start;">
+        <span style="min-width: 24px; height: 24px; background: var(--indigo); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; flex-shrink: 0;">3</span>
+        Confirmation dialog showing safety/transparency model
+      </li>
+    </ol>
+  </div>
+</section>
+
+<!-- VOICE & TONE -->
+<section id="voice">
+  <div class="label">06 — Voice & Tone</div>
+  <h2>Voice & Tone</h2>
+  <p style="margin-bottom: 32px;">Four attributes. Each paired with a "this / not that" example. Inside the Stripe App UI, voice IS the brand — it's the primary lever Javelin controls.</p>
+  <div class="voice-grid">
+
+    <div class="voice-card">
+      <div class="voice-header">
+        <div class="voice-attr">Direct</div>
+        <div style="font-size: 13px; color: var(--n600); margin-top: 4px;">Says what it means. Does what it says.</div>
+      </div>
+      <div class="voice-body">
+        <div class="voice-do-label">Say this</div>
+        <div class="voice-example do">"Here's your MRR dashboard."</div>
+        <div class="voice-dont-label">Not this</div>
+        <div class="voice-example dont">"We've prepared a comprehensive analysis of your recurring revenue metrics."</div>
+      </div>
+    </div>
+
+    <div class="voice-card">
+      <div class="voice-header">
+        <div class="voice-attr">Capable</div>
+        <div style="font-size: 13px; color: var(--n600); margin-top: 4px;">Quietly competent. Never needs to boast.</div>
+      </div>
+      <div class="voice-body">
+        <div class="voice-do-label">Say this</div>
+        <div class="voice-example do">"Done. I updated 47 subscriptions and rolled back 2 that had conflicts."</div>
+        <div class="voice-dont-label">Not this</div>
+        <div class="voice-example dont">"Our powerful AI engine leveraged cutting-edge technology to process your request."</div>
+      </div>
+    </div>
+
+    <div class="voice-card">
+      <div class="voice-header">
+        <div class="voice-attr">Clear</div>
+        <div style="font-size: 13px; color: var(--n600); margin-top: 4px;">Asks exactly what it needs to know.</div>
+      </div>
+      <div class="voice-body">
+        <div class="voice-do-label">Say this</div>
+        <div class="voice-example do">"I need to know: are you looking at all customers or just active ones?"</div>
+        <div class="voice-dont-label">Not this</div>
+        <div class="voice-example dont">"To optimize your experience, could you provide additional parameters?"</div>
+      </div>
+    </div>
+
+    <div class="voice-card">
+      <div class="voice-header">
+        <div class="voice-attr">Honest</div>
+        <div style="font-size: 13px; color: var(--n600); margin-top: 4px;">Transparent about limits. Never hides behind errors.</div>
+      </div>
+      <div class="voice-body">
+        <div class="voice-do-label">Say this</div>
+        <div class="voice-example do">"I can't undo a confirmed payment. Want me to issue a refund instead?"</div>
+        <div class="voice-dont-label">Not this</div>
+        <div class="voice-example dont">"An error has occurred in processing your request."</div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- MESSAGING -->
+<section id="messaging">
+  <div class="label">07 — Messaging Framework</div>
+  <h2>Messaging</h2>
+  <p style="margin-bottom: 32px;">Lead with the user's problem, then your solution. "Builder, not analyst" is the core differentiator — reinforce it at every touchpoint.</p>
+
+  <div class="message-card" style="background: linear-gradient(135deg, #EEF2FF 0%, #E0E7FF 100%); border-color: var(--light);">
+    <div class="message-role">Primary Tagline</div>
+    <div class="message-primary">Tell Stripe what to do.</div>
+    <div class="message-body">Five words. Positions the user as in control. Implies Stripe-nativeness. Contrasts with analytics competitors whose implicit promise is "learn what Stripe did."</div>
+  </div>
+
+  <div class="message-card">
+    <div class="message-role">Marketplace Subtitle · 80 chars</div>
+    <div class="message-sub mono">AI-powered builder for custom workflows, dashboards, and automations in Stripe</div>
+  </div>
+
+  <div class="message-card">
+    <div class="message-role">Key Messages · Ranked by Priority</div>
+    <ol style="list-style: none; display: flex; flex-direction: column; gap: 12px; counter-reset: msg-counter;">
+      <li style="display: flex; gap: 14px; align-items: flex-start;">
+        <span style="min-width: 28px; height: 28px; background: var(--indigo); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; flex-shrink: 0;">1</span>
+        <div>
+          <div style="font-weight: 600; font-size: 15px; color: var(--n900); margin-bottom: 2px;">Builder, not analyst.</div>
+          <div style="font-size: 13px; color: var(--n600);">Every competitor reads your data. Javelin reads it AND acts on it.</div>
+        </div>
+      </li>
+      <li style="display: flex; gap: 14px; align-items: flex-start;">
+        <span style="min-width: 28px; height: 28px; background: var(--indigo); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; flex-shrink: 0;">2</span>
+        <div>
+          <div style="font-weight: 600; font-size: 15px; color: var(--n900); margin-bottom: 2px;">Stripe-native.</div>
+          <div style="font-size: 13px; color: var(--n600);">Lives inside your Dashboard. No separate login, no data export, no setup.</div>
+        </div>
+      </li>
+      <li style="display: flex; gap: 14px; align-items: flex-start;">
+        <span style="min-width: 28px; height: 28px; background: var(--indigo); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; flex-shrink: 0;">3</span>
+        <div>
+          <div style="font-weight: 600; font-size: 15px; color: var(--n900); margin-bottom: 2px;">Operator-first.</div>
+          <div style="font-size: 13px; color: var(--n600);">For the founder running their business, not the developer building it.</div>
+        </div>
+      </li>
+      <li style="display: flex; gap: 14px; align-items: flex-start;">
+        <span style="min-width: 28px; height: 28px; background: var(--indigo); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; flex-shrink: 0;">4</span>
+        <div>
+          <div style="font-weight: 600; font-size: 15px; color: var(--n900); margin-bottom: 2px;">Transparent and safe.</div>
+          <div style="font-size: 13px; color: var(--n600);">Everything Javelin does is explained, confirmed, logged, and reversible.</div>
+        </div>
+      </li>
+      <li style="display: flex; gap: 14px; align-items: flex-start;">
+        <span style="min-width: 28px; height: 28px; background: var(--indigo); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; flex-shrink: 0;">5</span>
+        <div>
+          <div style="font-weight: 600; font-size: 15px; color: var(--n900); margin-bottom: 2px;">Stripe-deep.</div>
+          <div style="font-size: 13px; color: var(--n600);">Tuned to Stripe's object model, edge cases, and billing realities — not a generic AI.</div>
+        </div>
+      </li>
+    </ol>
+  </div>
+</section>
+
+<!-- DOS & DONTS -->
+<section id="dos-donts">
+  <div class="label">08 — Brand Usage</div>
+  <h2>Brand Dos & Don'ts</h2>
+  <p style="margin-bottom: 32px;">Messaging, visual, and competitive positioning rules in one place.</p>
+  <div class="dos-donts">
+    <div class="dos-col">
+      <h3>Do</h3>
+      <ul>
+        <li>Lead with the user's problem, then your solution</li>
+        <li>Say "Javelin builds" — active, concrete</li>
+        <li>Use Stripe's own terminology (MRR, churn, subscriptions)</li>
+        <li>Be specific: "builds dashboards and automations"</li>
+        <li>Acknowledge limitations honestly</li>
+        <li>Show concrete examples ("Try: 'Show me churn by plan'")</li>
+        <li>Say "Stripe-native" to mean embedded in Dashboard</li>
+        <li>Position as builder (active, constructive)</li>
+        <li>Use high-contrast text on backgrounds</li>
+        <li>Keep the logo mark simple and geometric</li>
+        <li>Match Stripe's visual tone in marketplace images</li>
+      </ul>
+    </div>
+    <div class="donts-col">
+      <h3>Don't</h3>
+      <ul>
+        <li>Lead with features or technology</li>
+        <li>Say "Javelin empowers you to" — passive, vague</li>
+        <li>Invent new terminology for known concepts</li>
+        <li>Be abstract: "transforms your Stripe experience"</li>
+        <li>Overpromise capabilities at MVP stage</li>
+        <li>Describe capabilities abstractly without examples</li>
+        <li>Say "integrated with Stripe" (implies external tool)</li>
+        <li>Position as assistant or copilot — passive, advisory</li>
+        <li>Use light text on medium backgrounds</li>
+        <li>Use detailed illustrations in the logo</li>
+        <li>Show mockups with custom CSS or non-Stripe UI</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ARCHETYPE -->
+<section id="archetype">
+  <div class="label">09 — Brand Personality</div>
+  <h2>Archetype</h2>
+  <p style="margin-bottom: 32px;">The Magician transforms complexity into tangible outcomes. The Sage grounds that power in trust and transparency — essential for an AI that modifies real business data.</p>
+
+  <div class="archetype-grid">
+    <div class="archetype-card primary">
+      <div class="archetype-role">Primary</div>
+      <div class="archetype-name">The Magician</div>
+      <p>Transforms complex Stripe operations into effortless outcomes. "Describe what you want and it appears" is a fundamentally Magician promise.</p>
+      <div class="archetype-traits">
+        <div class="trait">Transforms complexity into simplicity</div>
+        <div class="trait">Makes the impossible feel achievable</div>
+        <div class="trait">Operates through understanding, not brute force</div>
+        <div class="trait">Delivers tangible outcomes, not just insights</div>
+        <div class="trait">Inspires confidence through competence</div>
+      </div>
+    </div>
+    <div class="archetype-card secondary">
+      <div class="archetype-role">Supporting</div>
+      <div class="archetype-name">The Sage</div>
+      <p>Tempers the Magician with trustworthiness. When an AI touches real business data, users need to trust what the system is doing.</p>
+      <div class="archetype-traits">
+        <div class="trait">Clear explanations of what was built and why</div>
+        <div class="trait">Data freshness indicators and audit trails</div>
+        <div class="trait">Honest about limitations — asks before guessing</div>
+        <div class="trait">Competent, measured tone over hype</div>
+        <div class="trait">Transparency earned through visibility</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="personality">
+    <h3 style="font-size: 13px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--n400); margin-bottom: 16px;">If Javelin were a person</h3>
+    <p>"Javelin is the colleague who, when you describe a problem, says 'I can fix that' — and actually does, right then. Not the one who schedules a meeting to discuss it. Not the one who sends you a dashboard and says 'the data is all there.' The one who listens, understands, builds, and hands you the working solution with a brief explanation of what they did."</p>
+  </div>
+
+  <div style="margin-top: 32px; padding: 28px 32px; border: 1px solid var(--light); border-radius: 12px; background: #EEF2FF;">
+    <div class="label" style="color: var(--indigo); margin-bottom: 12px;">Positioning Statement · Internal</div>
+    <p style="font-size: 15px; color: var(--n900); line-height: 1.7;"><strong>To</strong> founders and ops leads at small, growing companies who run their business on Stripe, <strong>Javelin</strong> is the AI-powered builder inside your Stripe Dashboard <strong>that</strong> turns plain-language instructions into working workflows, dashboards, and automations — <strong>because</strong> every other tool in the Stripe ecosystem is a read-only analyst. Javelin is the only one that builds.</p>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <p>Javelin Brand Guidelines · v1.0 MVB · 2026-03-10</p>
+  <p>Review quarterly · See <span class="mono" style="font-size: 12px;">openspec/brand-guidelines.md</span> for full rationale</p>
+</footer>
+
+</body>
+</html>

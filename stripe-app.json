@@ -1,0 +1,109 @@
+{
+  "$schema": "https://stripe.com/stripe-app.schema.json",
+  "id": "com.javelin.analytics",
+  "name": "Javelin",
+  "version": "0.0.16",
+  "icon": "./icon.png",
+  "declarations": {
+    "distribution_type": "private",
+    "stripe_api_access": {
+      "permissions": [
+        {
+          "permission": "customer_read",
+          "purpose": "Read customer data to calculate business metrics and answer questions about your customer base"
+        },
+        {
+          "permission": "invoice_read",
+          "purpose": "Read invoice data to calculate revenue, MRR, and other billing metrics"
+        },
+        {
+          "permission": "charge_read",
+          "purpose": "Read charge data to analyze payment volume and revenue trends"
+        },
+        {
+          "permission": "subscription_read",
+          "purpose": "Read subscription data to calculate MRR, churn rate, and subscription analytics"
+        },
+        {
+          "permission": "product_read",
+          "purpose": "Read product data to break down revenue and metrics by product"
+        },
+        {
+          "permission": "plan_read",
+          "purpose": "Read price and plan data to analyze plan-level revenue and subscriber counts"
+        },
+        {
+          "permission": "secret_write",
+          "purpose": "Store and manage OAuth tokens securely via the Secret Store API"
+        }
+      ]
+    },
+    "stripe_api_access_type": "oauth",
+    "sandbox_install_compatible": true
+  },
+  "ui_extension": {
+    "views": [
+      {
+        "viewport": "stripe.dashboard.drawer.default",
+        "component": "ChatView"
+      },
+      {
+        "viewport": "settings",
+        "component": "SettingsView"
+      },
+      {
+        "viewport": "onboarding",
+        "component": "OnboardingView"
+      }
+    ],
+    "content_security_policy": {
+      "connect-src": [
+        "https://tecvycpmzcxxoqmtttjy.supabase.co/functions/v1/",
+        "https://openrouter.ai/api/",
+        "https://api.openai.com/v1/"
+      ],
+      "purpose": "Connect to Supabase backend for data processing and LLM provider for AI-powered business intelligence"
+    }
+  },
+  "extensions": [],
+  "permissions": [
+    {
+      "permission": "customer_read",
+      "purpose": "Read customer data to calculate business metrics and answer questions about your customer base"
+    },
+    {
+      "permission": "invoice_read",
+      "purpose": "Read invoice data to calculate revenue, MRR, and other billing metrics"
+    },
+    {
+      "permission": "charge_read",
+      "purpose": "Read charge data to analyze payment volume and revenue trends"
+    },
+    {
+      "permission": "subscription_read",
+      "purpose": "Read subscription data to calculate MRR, churn rate, and subscription analytics"
+    },
+    {
+      "permission": "product_read",
+      "purpose": "Read product data to break down revenue and metrics by product"
+    },
+    {
+      "permission": "plan_read",
+      "purpose": "Read price and plan data to analyze plan-level revenue and subscriber counts"
+    },
+    {
+      "permission": "secret_write",
+      "purpose": "Store and manage OAuth tokens securely via the Secret Store API"
+    }
+  ],
+  "post_install_action": {
+    "type": "onboarding"
+  },
+  "allowed_redirect_uris": [
+    "https://dashboard.stripe.com/test/apps-oauth/com.javelin.analytics",
+    "https://dashboard.stripe.com/apps-oauth/com.javelin.analytics"
+  ],
+  "distribution_type": "private",
+  "stripe_api_access_type": "oauth",
+  "sandbox_install_compatible": true
+}
